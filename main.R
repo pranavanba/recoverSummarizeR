@@ -23,8 +23,8 @@ file.id %>%
 
 # Parse file(s) to dataframe -------------------------------------------------
 
-DailyData_json <- stream_in(con = file('data/FitbitDailyData_20220111-20230103.json'))
-DailyData_csv <- as_tibble(read.csv('data/FitbitDailyData_20221101-20230103.csv'))
+DailyData_json <- stream_in(con = file('raw-data/FitbitDailyData_20220111-20230103.json'))
+DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
 
 
 # Process i2b2 concept map ------------------------------------------------
