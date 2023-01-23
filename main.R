@@ -18,7 +18,7 @@ file.id <- "syn50894470"
 file.id %>% 
   synGet() %>% 
   {.$path} %>% 
-  unzip(exdir = 'data')
+  unzip(exdir = 'raw-data')
 
 
 # Parse file(s) to dataframe -------------------------------------------------
