@@ -8,3 +8,14 @@ install_load("dplyr","tidyr", "magrittr", "tibble", "devtools")
 #   ref="reticulate")
 library(synapser)
 
+
+# Read data ---------------------------------------------------------------
+
+synLogin()
+
+file.id <- "syn50894469"
+
+file.id %>% 
+  synGet() %>% 
+  {.$path} %>% 
+  unzip(exdir = 'data')
