@@ -43,4 +43,4 @@ vignettes/*.pdf
 .RDataTmp1
 
 # Raw data directories
-/data
+/raw-data
