@@ -13,7 +13,7 @@ library(synapser)
 
 synLogin()
 
-file.id <- "syn50894470"
+file.id <- "syn50894469"
 
 file.id %>% 
   synGet() %>% 
@@ -24,7 +24,7 @@ file.id %>%
 # Parse file(s) to dataframe -------------------------------------------------
 
 DailyData_json <- stream_in(con = file('raw-data/FitbitDailyData_20220111-20230103.json'))
-DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
+# DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
 
 
 # Process i2b2 concept map ------------------------------------------------
