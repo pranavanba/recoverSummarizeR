@@ -22,7 +22,8 @@ file.id %>%
 
 
 # Parse file(s) to dataframe -------------------------------------------------
-# File format depends on what is available in the data export from Care Evolution (e.g. it can be CSV and/or JSON)
+# File format depends on what is available in the data export from Care
+# Evolution (e.g. it can be CSV and/or JSON)
 
 # DailyData_json <- stream_in(con = file('raw-data/FitbitDailyData_20220111-20230103.json'))
 DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
@@ -52,7 +53,11 @@ example_df <- DailyData_csv %>%
 # 'export:concept' 
 # 2) Create the final data frame by binding the relevant
 # columns from 'data' data frame with those from the filtered map
-fx <- function(concept, export, map, data) {
+fx <- function(concept, export, path_to_map_csv, path_to_data_csv) {
+  data <- as_tibble(read.csv(data_path))
+  
+  map <- as_tibble(read.csv(map_csv, skip = 1))
+  
   map_filtered <- map %>% 
     filter(str_ends(concept_cd, paste0(export, ":", concept))) %>% 
     select(concept_cd, UNITS_CD, Definition)
@@ -68,7 +73,7 @@ fx <- function(concept, export, map, data) {
 
 # Test the function -------------------------------------------------------
 
-BodyBmi <- fx("BodyBmi", "DailyData", concept_map, DailyData_csv)
-Calories <- fx("Calories", "DailyData", concept_map, DailyData_csv)
-BodyWeight <- fx("BodyWeight", "DailyData", concept_map, DailyData_csv)
+BodyBmi <- fx("BodyBmi", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
+Calories <- fx("Calories", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
+BodyWeight <- fx("BodyWeight", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
 
