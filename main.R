@@ -2,7 +2,7 @@
 
 # install.packages("install.load")
 library(install.load)
-install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite")
+install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr")
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
 #   ref="reticulate")
@@ -23,6 +23,7 @@ file.id %>%
 
 # Parse file(s) to dataframe -------------------------------------------------
 # File format depends on what is available in the data export from Care Evolution (e.g. it can be CSV and/or JSON)
+
 # DailyData_json <- stream_in(con = file('raw-data/FitbitDailyData_20220111-20230103.json'))
 DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
 
@@ -46,24 +47,26 @@ example_df <- DailyData_csv %>%
 
 ## Function for all concepts ==============================================
 # Can use for all DailyData concepts
+
+# 1) Filter the 'map' data frame to include rows only where 'concept' ends with
+# 'export:concept' 
+# 2) Create the final data frame by binding the relevant
+# columns from 'data' data frame with those from the filtered map
 fx <- function(concept, export, map, data) {
-  path <- map %>% 
-    select(concept_cd) %>% 
-    filter(grepl(paste0("Fitbit:",export,":",concept,"$"), concept_cd, ignore.case = T)) %>% 
-    as.character()
-  
-  concept <- data %>% 
+  map_filtered <- map %>% 
+    filter(str_ends(concept_cd, paste0(export, ":", concept))) %>% 
+    select(concept_cd, UNITS_CD, Definition)
+
+  out <- data %>% 
     select(ParticipantIdentifier, Date, concept) %>% 
-    # mutate(unit = map$UNITS_CD[which(map$concept_cd==path)]) %>%
-    mutate(valtype = typeof(.[[3]]))
-    # mutate(definition = map$Definition[which(map$concept_cd==path)])
+    mutate(value_type = typeof(.[[3]])) %>% 
+    bind_cols(select(map_filtered, UNITS_CD, Definition))
   
-  # return(concept)
+  # return(out)
 }
 
 
 # Test the function -------------------------------------------------------
-
 
 BodyBmi <- fx("BodyBmi", "DailyData", concept_map, DailyData_csv)
 Calories <- fx("Calories", "DailyData", concept_map, DailyData_csv)
