@@ -53,6 +53,7 @@ example_df <- DailyData_csv %>%
 # 'export:concept' 
 # 2) Create the final data frame by binding the relevant
 # columns from 'data' data frame with those from the filtered map
+
 fx <- function(concept, export, path_to_map_csv, path_to_data_csv) {
   data <- as_tibble(read.csv(data_path))
   
@@ -76,4 +77,16 @@ fx <- function(concept, export, path_to_map_csv, path_to_data_csv) {
 BodyBmi <- fx("BodyBmi", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
 Calories <- fx("Calories", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
 BodyWeight <- fx("BodyWeight", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
+
+
+# Mock example for single df output ---------------------------------------
+
+mock <- bind_rows(BodyBmi, BodyWeight, Calories)
+mock %<>% rename(Value = Variable)
+mock %<>% mutate(Variable = "")
+mock$Variable[which(grepl("Index", mock$Definition))] <- "BodyBmi"
+mock$Variable[which(grepl("weight", mock$Definition))] <- "BodyWeight"
+mock$Variable[which(grepl("exercise", mock$Definition))] <- "Calories"
+mock %<>% select(ParticipantIdentifier, Date, Variable, Value, value_type, UNITS_CD, Definition)
+bind_rows(mock[1:5,], mock[483:487,], mock[965:969,]) %>% View()
 
