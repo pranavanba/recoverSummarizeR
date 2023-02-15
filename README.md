@@ -2,7 +2,7 @@
 
 Exploring conversion and summarization of data to i2b2 format
 
-#### General logic
+### General logic
 
 1.  Get curated datasets (parquet files)
 
