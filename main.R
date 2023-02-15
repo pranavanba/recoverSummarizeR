@@ -2,7 +2,7 @@
 
 # install.packages("install.load")
 library(install.load)
-install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr")
+install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr", "arrow", "googlesheets4")
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
 #   ref="reticulate")
@@ -27,9 +27,9 @@ setwd('..')
 DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
 
 
-# Process i2b2 concept map ------------------------------------------------
+# Get i2b2 concepts map ---------------------------------------------------
 
-concept_map <- as_tibble(read.csv('i2b2conceptmap.csv', skip = 1))
+concept_map <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link")
 
 
 # Convert to i2b2 concept format -------------------------------------------------
