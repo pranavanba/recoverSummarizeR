@@ -9,16 +9,14 @@ install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "str
 library(synapser)
 
 
-# Read data ---------------------------------------------------------------
+# Get data ----------------------------------------------------------------
 
 synLogin()
 
-file.id <- "syn50894470"
-
-file.id %>% 
-  synGet() %>% 
-  {.$path} %>% 
-  unzip(exdir = 'raw-data')
+dir.create('raw-data')
+setwd('raw-data/')
+system("synapse get -r syn50996868")
+setwd('..')
 
 
 # Parse file(s) to dataframe -------------------------------------------------
