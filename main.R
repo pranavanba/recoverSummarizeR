@@ -46,14 +46,19 @@ tmp <- lapply(file_paths, function(file_path) {
 names(tmp) <- gsub("\\.(parquet|tsv|ndjson)$", "", paste(basename(dirname(file_paths)),"-",basename(file_paths)))
 tmp <- tmp[!grepl("MANIFEST", names(tmp))]
 names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
+names(tmp) <- sub("dataset_", "", names(tmp))
 
-multi_part_dfs <- names(tmp)[duplicated(names(tmp))] %>% unique()
+# May need to update the following to accommodate multiple multi-part parquet
+# files; currently works with only one mutli-part file: fitbitintradaycombined
+# was the only multi-part parquet file found. Perhaps combine the multi-part
+# files inside the respective raw-data nested folder before reading all into a
+# df.
+multi_part_dfs <- list(names(tmp)[duplicated(names(tmp))] %>% unique())
 tmp_df_list <- bind_rows(tmp[which(names(tmp)==multi_part_dfs)])
-tmp <- tmp[!grepl(multi_part_dfs, names(tmp))]
-tmp[[length(tmp) + 1]] <- tmp_df_list
-df_list <- tmp
-
-rm(tmp, tmp_df_list)
+tmp2 <- tmp[!grepl(multi_part_dfs, names(tmp))]
+df_list <- c(tmp2, list(tmp_df_list))
+names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <- unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
+rm(tmp, tmp2, tmp_df_list, multi_part_dfs)
 
 
 # Convert to i2b2 concept format -------------------------------------------------
