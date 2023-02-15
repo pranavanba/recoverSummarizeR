@@ -2,7 +2,18 @@
 
 # install.packages("install.load")
 library(install.load)
-install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr", "arrow", "googlesheets4", "readr")
+install_load(
+  "dplyr",
+  "tidyr",
+  "magrittr",
+  "tibble",
+  "devtools",
+  "jsonlite",
+  "stringr",
+  "arrow",
+  "googlesheets4",
+  "readr"
+)
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
 #   ref="reticulate")
@@ -24,14 +35,20 @@ setwd('..')
 
 # Get i2b2 concepts map ---------------------------------------------------
 
-concept_map <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link")
+concept_map <-
+  googlesheets4::read_sheet(
+    "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
+  )
 
 
 # Read parquet files to df ------------------------------------------------
 
 parent_directory <- 'raw-data/parquet-pilot-datasets'
 
-file_paths <- list.files(path = parent_directory, recursive = TRUE, full.names = TRUE)
+file_paths <-
+  list.files(path = parent_directory,
+             recursive = TRUE,
+             full.names = TRUE)
 
 tmp <- lapply(file_paths, function(file_path) {
   if (grepl(".parquet$", file_path)) {
@@ -43,7 +60,10 @@ tmp <- lapply(file_paths, function(file_path) {
   }
 })
 
-names(tmp) <- gsub("\\.(parquet|tsv|ndjson)$", "", paste(basename(dirname(file_paths)),"-",basename(file_paths)))
+names(tmp) <-
+  gsub("\\.(parquet|tsv|ndjson)$",
+       "",
+       paste(basename(dirname(file_paths)), "-", basename(file_paths)))
 tmp <- tmp[!grepl("MANIFEST", names(tmp))]
 names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
 names(tmp) <- sub("dataset_", "", names(tmp))
@@ -53,46 +73,55 @@ names(tmp) <- sub("dataset_", "", names(tmp))
 # was the only multi-part parquet file found. Perhaps combine the multi-part
 # files inside the respective raw-data nested folder before reading all into a
 # df.
-multi_part_dfs <- list(names(tmp)[duplicated(names(tmp))] %>% unique())
-tmp_df_list <- bind_rows(tmp[which(names(tmp)==multi_part_dfs)])
+multi_part_dfs <-
+  list(names(tmp)[duplicated(names(tmp))] %>% unique())
+tmp_df_list <- bind_rows(tmp[which(names(tmp) == multi_part_dfs)])
 tmp2 <- tmp[!grepl(multi_part_dfs, names(tmp))]
 df_list <- c(tmp2, list(tmp_df_list))
-names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <- unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
+names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <-
+  unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
 rm(tmp, tmp2, tmp_df_list, multi_part_dfs)
 
 
 # Convert to i2b2 concept format -------------------------------------------------
+
 ## Specific example using one concept =====================================
+
 # Can use any DailyData concept
 path <- concept_map$concept_cd[4]
 
-example_df <- DailyData_csv %>% 
-  select(ParticipantIdentifier, Date, BodyWeight) %>% 
-  mutate(unit = concept_map$UNITS_CD[which(concept_map$concept_cd==path)]) %>% 
-  mutate(valtype = typeof(BodyWeight)) %>% 
-  mutate(definition = concept_map$Definition[which(concept_map$concept_cd==path)])
+example_df <- DailyData_csv %>%
+  select(ParticipantIdentifier, Date, BodyWeight) %>%
+  mutate(unit = concept_map$UNITS_CD[which(concept_map$concept_cd == path)]) %>%
+  mutate(valtype = typeof(BodyWeight)) %>%
+  mutate(definition = concept_map$Definition[which(concept_map$concept_cd ==
+                                                     path)])
 
 
 ## Function for all concepts ==============================================
+
 # Can use for all DailyData concepts
 
 # 1) Filter the 'map' data frame to include rows only where 'concept' ends with
-# 'export:concept' 
+# 'export:concept'
 # 2) Create the final data frame by binding the relevant
 # columns from 'data' data frame with those from the filtered map
 
-fx <- function(concept, export, path_to_map_csv, path_to_data_csv) {
+fx <- function(concept,
+               export,
+               path_to_map_csv,
+               path_to_data_csv) {
   data <- as_tibble(read.csv(data_path))
   
   map <- as_tibble(read.csv(map_csv, skip = 1))
   
-  map_filtered <- map %>% 
-    filter(str_ends(concept_cd, paste0(export, ":", concept))) %>% 
+  map_filtered <- map %>%
+    filter(str_ends(concept_cd, paste0(export, ":", concept))) %>%
     select(concept_cd, UNITS_CD, Definition)
-
-  out <- data %>% 
-    select(ParticipantIdentifier, Date, concept) %>% 
-    mutate(value_type = typeof(.[[3]])) %>% 
+  
+  out <- data %>%
+    select(ParticipantIdentifier, Date, concept) %>%
+    mutate(value_type = typeof(.[[3]])) %>%
     bind_cols(select(map_filtered, UNITS_CD, Definition))
   
   # return(out)
@@ -101,9 +130,27 @@ fx <- function(concept, export, path_to_map_csv, path_to_data_csv) {
 
 # Test the function -------------------------------------------------------
 
-BodyBmi <- fx("BodyBmi", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
-Calories <- fx("Calories", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
-BodyWeight <- fx("BodyWeight", "DailyData", 'i2b2conceptmap.csv', 'raw-data/FitbitDailyData_20221101-20230103.csv')
+BodyBmi <-
+  fx(
+    "BodyBmi",
+    "DailyData",
+    'i2b2conceptmap.csv',
+    'raw-data/FitbitDailyData_20221101-20230103.csv'
+  )
+Calories <-
+  fx(
+    "Calories",
+    "DailyData",
+    'i2b2conceptmap.csv',
+    'raw-data/FitbitDailyData_20221101-20230103.csv'
+  )
+BodyWeight <-
+  fx(
+    "BodyWeight",
+    "DailyData",
+    'i2b2conceptmap.csv',
+    'raw-data/FitbitDailyData_20221101-20230103.csv'
+  )
 
 
 # Mock example for single df output ---------------------------------------
@@ -112,8 +159,15 @@ mock <- bind_rows(BodyBmi, BodyWeight, Calories)
 mock %<>% rename(Value = Variable)
 mock %<>% mutate(Variable = "")
 mock$Variable[which(grepl("Index", mock$Definition))] <- "BodyBmi"
-mock$Variable[which(grepl("weight", mock$Definition))] <- "BodyWeight"
-mock$Variable[which(grepl("exercise", mock$Definition))] <- "Calories"
-mock %<>% select(ParticipantIdentifier, Date, Variable, Value, value_type, UNITS_CD, Definition)
-bind_rows(mock[1:5,], mock[483:487,], mock[965:969,]) %>% View()
-
+mock$Variable[which(grepl("weight", mock$Definition))] <-
+  "BodyWeight"
+mock$Variable[which(grepl("exercise", mock$Definition))] <-
+  "Calories"
+mock %<>% select(ParticipantIdentifier,
+                 Date,
+                 Variable,
+                 Value,
+                 value_type,
+                 UNITS_CD,
+                 Definition)
+bind_rows(mock[1:5, ], mock[483:487, ], mock[965:969, ]) %>% View()
