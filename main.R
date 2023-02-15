@@ -2,7 +2,7 @@
 
 # install.packages("install.load")
 library(install.load)
-install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr", "arrow", "googlesheets4")
+install_load("dplyr","tidyr", "magrittr", "tibble", "devtools", "jsonlite", "stringr", "arrow", "googlesheets4", "readr")
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
 #   ref="reticulate")
@@ -15,21 +15,45 @@ synLogin()
 
 dir.create('raw-data')
 setwd('raw-data/')
+dir.create('parquet-pilot-datasets')
+setwd('parquet-pilot-datasets/')
 system("synapse get -r syn50996868")
 setwd('..')
-
-
-# Parse file(s) to dataframe -------------------------------------------------
-# File format depends on what is available in the data export from Care
-# Evolution (e.g. it can be CSV and/or JSON)
-
-# DailyData_json <- stream_in(con = file('raw-data/FitbitDailyData_20220111-20230103.json'))
-DailyData_csv <- as_tibble(read.csv('raw-data/FitbitDailyData_20221101-20230103.csv'))
+setwd('..')
 
 
 # Get i2b2 concepts map ---------------------------------------------------
 
 concept_map <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link")
+
+
+# Read parquet files to df ------------------------------------------------
+
+parent_directory <- 'raw-data/parquet-pilot-datasets'
+
+file_paths <- list.files(path = parent_directory, recursive = TRUE, full.names = TRUE)
+
+tmp <- lapply(file_paths, function(file_path) {
+  if (grepl(".parquet$", file_path)) {
+    read_parquet(file_path)
+  } else if (grepl(".tsv$", file_path)) {
+    read_tsv(file_path, show_col_types = F)
+  } else if (grepl(".ndjson$", file_path)) {
+    ndjson::stream_in(file_path, cls = "tbl")
+  }
+})
+
+names(tmp) <- gsub("\\.(parquet|tsv|ndjson)$", "", paste(basename(dirname(file_paths)),"-",basename(file_paths)))
+tmp <- tmp[!grepl("MANIFEST", names(tmp))]
+names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
+
+multi_part_dfs <- names(tmp)[duplicated(names(tmp))] %>% unique()
+tmp_df_list <- bind_rows(tmp[which(names(tmp)==multi_part_dfs)])
+tmp <- tmp[!grepl(multi_part_dfs, names(tmp))]
+tmp[[length(tmp) + 1]] <- tmp_df_list
+df_list <- tmp
+
+rm(tmp, tmp_df_list)
 
 
 # Convert to i2b2 concept format -------------------------------------------------
