@@ -24,13 +24,13 @@ library(synapser)
 
 synLogin()
 
-dir.create('raw-data')
-setwd('raw-data/')
-dir.create('parquet-pilot-datasets')
-setwd('parquet-pilot-datasets/')
+dir.create("raw-data")
+setwd("raw-data/")
+dir.create("parquet-pilot-datasets")
+setwd("parquet-pilot-datasets/")
 system("synapse get -r syn50996868")
-setwd('..')
-setwd('..')
+setwd("..")
+setwd("..")
 
 
 # Get i2b2 concepts map ---------------------------------------------------
@@ -43,12 +43,14 @@ concept_map <-
 
 # Read parquet files to df ------------------------------------------------
 
-parent_directory <- 'raw-data/parquet-pilot-datasets'
+parent_directory <- "raw-data/parquet-pilot-datasets"
 
 file_paths <-
-  list.files(path = parent_directory,
-             recursive = TRUE,
-             full.names = TRUE)
+  list.files(
+    path = parent_directory,
+    recursive = TRUE,
+    full.names = TRUE
+  )
 
 tmp <- lapply(file_paths, function(file_path) {
   if (grepl(".parquet$", file_path)) {
@@ -61,10 +63,15 @@ tmp <- lapply(file_paths, function(file_path) {
 })
 
 names(tmp) <-
-  gsub("\\.(parquet|tsv|ndjson)$",
-       "",
-       paste(basename(dirname(file_paths)), "-", basename(file_paths)))
+  gsub(
+    "\\.(parquet|tsv|ndjson)$",
+    "",
+    paste(basename(dirname(file_paths)), "-", basename(file_paths))
+  )
+
+# Exclude manifest and HK ecg parent files for now
 tmp <- tmp[!grepl("MANIFEST", names(tmp))]
+tmp <- tmp[!grepl("healthkitv2electrocardiogram - HealthKitV2Electrocardiogram", names(tmp))]
 names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
 names(tmp) <- sub("dataset_", "", names(tmp))
 
@@ -95,7 +102,7 @@ example_df <- DailyData_csv %>%
   mutate(unit = concept_map$UNITS_CD[which(concept_map$concept_cd == path)]) %>%
   mutate(valtype = typeof(BodyWeight)) %>%
   mutate(definition = concept_map$Definition[which(concept_map$concept_cd ==
-                                                     path)])
+    path)])
 
 
 ## Function for all concepts ==============================================
@@ -112,18 +119,18 @@ fx <- function(concept,
                path_to_map_csv,
                path_to_data_csv) {
   data <- as_tibble(read.csv(data_path))
-  
+
   map <- as_tibble(read.csv(map_csv, skip = 1))
-  
+
   map_filtered <- map %>%
     filter(str_ends(concept_cd, paste0(export, ":", concept))) %>%
     select(concept_cd, UNITS_CD, Definition)
-  
+
   out <- data %>%
     select(ParticipantIdentifier, Date, concept) %>%
     mutate(value_type = typeof(.[[3]])) %>%
     bind_cols(select(map_filtered, UNITS_CD, Definition))
-  
+
   # return(out)
 }
 
@@ -134,22 +141,22 @@ BodyBmi <-
   fx(
     "BodyBmi",
     "DailyData",
-    'i2b2conceptmap.csv',
-    'raw-data/FitbitDailyData_20221101-20230103.csv'
+    "i2b2conceptmap.csv",
+    "raw-data/FitbitDailyData_20221101-20230103.csv"
   )
 Calories <-
   fx(
     "Calories",
     "DailyData",
-    'i2b2conceptmap.csv',
-    'raw-data/FitbitDailyData_20221101-20230103.csv'
+    "i2b2conceptmap.csv",
+    "raw-data/FitbitDailyData_20221101-20230103.csv"
   )
 BodyWeight <-
   fx(
     "BodyWeight",
     "DailyData",
-    'i2b2conceptmap.csv',
-    'raw-data/FitbitDailyData_20221101-20230103.csv'
+    "i2b2conceptmap.csv",
+    "raw-data/FitbitDailyData_20221101-20230103.csv"
   )
 
 
@@ -163,11 +170,14 @@ mock$Variable[which(grepl("weight", mock$Definition))] <-
   "BodyWeight"
 mock$Variable[which(grepl("exercise", mock$Definition))] <-
   "Calories"
-mock %<>% select(ParticipantIdentifier,
-                 Date,
-                 Variable,
-                 Value,
-                 value_type,
-                 UNITS_CD,
-                 Definition)
+mock %<>% select(
+  ParticipantIdentifier,
+  Date,
+  Variable,
+  Value,
+  value_type,
+  UNITS_CD,
+  Definition
+)
 bind_rows(mock[1:5, ], mock[483:487, ], mock[965:969, ]) %>% View()
+
