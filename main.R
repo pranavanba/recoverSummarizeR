@@ -230,5 +230,8 @@ new_df_list <- lapply(df_list, split_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
 
-# 3. Add i2b2 cols (unit, type, definition)
+# 3. Add i2b2 cols (unit, type, definition); OR copy appropriate section of respective data frames into new column in concept map?
+# Ex for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
+
+# 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
