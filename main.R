@@ -189,7 +189,16 @@ identical((df_list$`fitbitsleeplogs ` %>% count(LogId) %>% .[1] %>% distinct()),
 # Data Summarization ----------------------------------------------------------------------------------------------
 
 # 1. Extract collected and calculated vars from concept map and store someplace; OR
-# 1. Store list of constant cols (all other cols will be treated as vars)
+# 1. Store array of constant cols (all other cols will be treated as vars)
+
+all_cols <-
+  lapply(df_list, names) %>% 
+  unlist() %>% 
+  enframe()
+
+all_cols$name %<>% {gsub("\\s\\d+", "", .)}
+tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>% unique()
+const_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
 
 # 2. Separate dfs with vars into individual dfs (know which cols are constant and which are vars based on list of vars extracted in previous step)
 # 3. Change structure: variable and value cols
