@@ -12,7 +12,8 @@ install_load(
   "stringr",
   "arrow",
   "googlesheets4",
-  "readr"
+  "readr",
+  "reshape2"
 )
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
@@ -202,16 +203,32 @@ all_cols$name %<>% {
 tmp <- all_cols$value[all_cols$value %>%
   duplicated() %>%
   which()] %>%
-  append(all_cols$value[grepl("date", (all_cols$value %>% tolower()))]) %>%
+  append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
   # append(all_cols$value[grepl("date", (all_cols$value %>% tolower())) & !grepl("HKDate", all_cols$value)]) %>%
   unique()
 
 metadata_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
 
-# 2. Separate dfs with vars into individual dfs (know which cols are metadata/var data based on list of cols created in previous step)
+rm(tmp)
 
+# 2. Separate dfs with vars into individual dfs (know which cols are metadata/var data based on list of cols created in previous step) and change structure: variable (measurement) and value cols
 
+# Define a function to split up a data frame
+split_df <- function(df) {
+  # Get indices of signal measurement columns
+  signal_cols <- setdiff(names(df), metadata_cols)
+  
+  # Melt the data frame to create a single "value" column
+  df_melt <- melt(df, id.vars = intersect(metadata_cols, names(df)), measure.vars = signal_cols,
+                  variable.name = "measurement", value.name = "value")
+  
+  return(df_melt)
+}
 
-# 3. Change structure: variable and value cols
-# 4. Add i2b2 cols (unit, type, definition)
-# 5. Row bind vars' dfs
+# Apply the split_df function to the list of data frames
+new_df_list <- lapply(df_list, split_df)
+
+new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
+
+# 3. Add i2b2 cols (unit, type, definition)
+
