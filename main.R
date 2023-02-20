@@ -191,16 +191,27 @@ identical((df_list$`fitbitsleeplogs ` %>% count(LogId) %>% .[1] %>% distinct()),
 # 1. Extract collected and calculated vars from concept map and store someplace; OR
 # 1. Store array of constant cols (all other cols will be treated as vars)
 
-all_cols <-
-  lapply(df_list, names) %>% 
-  unlist() %>% 
+all_cols <- lapply(df_list, names) %>%
+  unlist() %>%
   enframe()
 
-all_cols$name %<>% {gsub("\\s\\d+", "", .)}
-tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>% unique()
-const_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
+all_cols$name %<>% {
+  gsub("\\s\\d+", "", .)
+}
 
-# 2. Separate dfs with vars into individual dfs (know which cols are constant and which are vars based on list of vars extracted in previous step)
+tmp <- all_cols$value[all_cols$value %>%
+  duplicated() %>%
+  which()] %>%
+  append(all_cols$value[grepl("date", (all_cols$value %>% tolower()))]) %>%
+  # append(all_cols$value[grepl("date", (all_cols$value %>% tolower())) & !grepl("HKDate", all_cols$value)]) %>%
+  unique()
+
+metadata_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
+
+# 2. Separate dfs with vars into individual dfs (know which cols are metadata/var data based on list of cols created in previous step)
+
+
+
 # 3. Change structure: variable and value cols
 # 4. Add i2b2 cols (unit, type, definition)
 # 5. Row bind vars' dfs
