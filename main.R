@@ -189,8 +189,7 @@ identical((df_list$`fitbitsleeplogs ` %>% count(LogId) %>% .[1] %>% distinct()),
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
-# 1. Extract collected and calculated vars from concept map and store someplace; OR
-# 1. Store array of constant cols (all other cols will be treated as vars)
+# 1. Store vector of metadata cols (all other cols will be treated as signal/measurement vars)
 
 all_cols <- lapply(df_list, names) %>%
   unlist() %>%
@@ -211,7 +210,7 @@ metadata_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
 
 rm(tmp)
 
-# 2. Separate dfs with vars into individual dfs (know which cols are metadata/var data based on list of cols created in previous step) and change structure: variable (measurement) and value cols
+# 2. Melt data frames (know which cols are metadata/measurement data based on list of cols created in previous step) and update structure: measurement (variable) and value (variable value) cols
 
 # Define a function to split up a data frame
 split_df <- function(df) {
@@ -230,8 +229,7 @@ new_df_list <- lapply(df_list, split_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
 
-# 3. Add i2b2 cols (unit, type, definition); OR copy appropriate section of respective data frames into new column in concept map?
-# Ex for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
+# 3. Add i2b2 cols (unit, type, definition); OR copy/link appropriate section of respective data frames into new column in concept map? E.g. for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
