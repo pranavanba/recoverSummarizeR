@@ -91,7 +91,7 @@ rm(tmp, tmp2, tmp_df_list, multi_part_dfs)
 
 # Convert to i2b2 concept format -------------------------------------------------
 
-## Specific example using one concept =====================================
+## Specific example using one concept
 
 # Can use any DailyData concept
 path <- concept_map$concept_cd[4]
@@ -134,7 +134,7 @@ fx <- function(concept,
 }
 
 
-# Test the function -------------------------------------------------------
+# Test the function
 
 BodyBmi <-
   fx(
