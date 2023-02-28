@@ -235,31 +235,53 @@ new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
 # For summaries: create fx for each type of summary --> all time vs weekly, add case switching within both depending on 5/95 percentile, mean, med, var, count
 
 summary <- function(timescale, type) {
-  
   alltime <- function(type) {
-    switch (type,
-            pct5 = 11,
-            pct95 = 12,
-            mean = 13,
-            median = 14,
-            variance = 15,
-            numRecords = 16)
+    switch(type,
+      pct5 = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        summarise(quantile(as.numeric(value), 0.05, na.rm = T)),
+      pct95 = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        select(value) %>%
+        summarise(quantile(as.numeric(value), 0.95, na.rm = T)),
+      mean = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        summarise(mean(as.numeric(value), na.rm = T)),
+      median = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        summarise(median(as.numeric(value), na.rm = T)),
+      variance = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        summarise(var(as.numeric(value), na.rm = T)),
+      numRecords = new_df_list[["fitbitactivitylogs "]] %>%
+        select(measurement, value) %>%
+        group_by(measurement) %>%
+        drop_na() %>%
+        count()
+    )
   }
-  
+
   weekly <- function(type) {
-    switch (type,
-            pct5 = 21,
-            pct95 = 22,
-            mean = 23,
-            median = 24,
-            variance = 25,
-            numRecords = 26)
+    switch(type,
+      pct5 = ,
+      pct95 = ,
+      mean = ,
+      median = ,
+      variance = ,
+      numRecords = 
+    )
   }
-  
-  switch (timescale,
-          alltime = alltime(type),
-          weekly = weekly(type))
+
+  switch(timescale,
+    alltime = alltime(type),
+    weekly = weekly(type)
+  )
 }
 
-# summary("alltime", "mean")
+summary("alltime", "median")
 
