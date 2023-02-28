@@ -232,4 +232,34 @@ new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
 # 3. Add i2b2 cols (unit, type, definition); OR copy/link appropriate section of respective data frames into new column in concept map? E.g. for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
+# For summaries: create fx for each type of summary --> all time vs weekly, add case switching within both depending on 5/95 percentile, mean, med, var, count
+
+summary <- function(timescale, type) {
+  
+  alltime <- function(type) {
+    switch (type,
+            pct5 = 11,
+            pct95 = 12,
+            mean = 13,
+            median = 14,
+            variance = 15,
+            numRecords = 16)
+  }
+  
+  weekly <- function(type) {
+    switch (type,
+            pct5 = 21,
+            pct95 = 22,
+            mean = 23,
+            median = 24,
+            variance = 25,
+            numRecords = 26)
+  }
+  
+  switch (timescale,
+          alltime = alltime(type),
+          weekly = weekly(type))
+}
+
+# summary("alltime", "mean")
 
