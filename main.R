@@ -185,8 +185,10 @@ rm(tmp, tmp2, tmp_df_list, multi_part_dfs)
 # Find common columns to merge on ---------------------------------------------------------------------------------
 
 # Common cols between fitbit sleep log files
-identical((df_list$fitbitsleeplogs %>% count(LogId) %>% .[1] %>% distinct()),
-          (df_list$fitbitsleeplogs_sleeplogdetails %>% count(LogId) %>% .[1] %>% distinct()))
+identical(
+  (df_list$fitbitsleeplogs$LogId %>% unique() %>% sort()), 
+  (df_list$fitbitsleeplogs_sleeplogdetails$LogId %>% unique() %>% sort())
+)
 
 
 # Data Summarization ----------------------------------------------------------------------------------------------
