@@ -193,7 +193,7 @@ identical(
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
-# 1. Store vector of metadata cols (all other cols will be treated as signal/measurement vars)
+# 1. Store vector of metadata cols (all other cols will be treated as signal/concept cols)
 
 all_cols <- lapply(df_list, names) %>%
   unlist() %>%
@@ -203,9 +203,7 @@ all_cols$name %<>% {
   gsub("\\s\\d+", "", .)
 }
 
-tmp <- all_cols$value[all_cols$value %>%
-  duplicated() %>%
-  which()] %>%
+tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
   # append(all_cols$value[grepl("date", (all_cols$value %>% tolower())) & !grepl("HKDate", all_cols$value)]) %>%
   unique()
@@ -214,16 +212,16 @@ metadata_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
 
 rm(tmp)
 
-# 2. Melt data frames (know which cols are metadata/measurement data based on list of cols created in previous step) and update structure: measurement (variable) and value (variable value) cols
+# 2. Melt data frames (know which cols are metadata or concept data based on list of cols created in previous step) and update structure: concept (variable) and value (variable value) cols
 
 # Define a function to split up a data frame
 split_df <- function(df) {
-  # Get indices of signal measurement columns
+  # Get indices of signal concept columns
   signal_cols <- setdiff(names(df), metadata_cols)
   
   # Melt the data frame to create a single "value" column
   df_melt <- melt(df, id.vars = intersect(metadata_cols, names(df)), measure.vars = signal_cols,
-                  variable.name = "measurement", value.name = "value")
+                  variable.name = "concept", value.name = "value")
   
   return(df_melt)
 }
@@ -231,7 +229,7 @@ split_df <- function(df) {
 # Apply the split_df function to the list of data frames
 new_df_list <- lapply(df_list, split_df)
 
-new_factors <- lapply(new_df_list, function(x) x[["measurement"]] %>% unique())
+new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
 # 3. Add i2b2 cols (unit, type, definition); OR copy/link appropriate section of respective data frames into new column in concept map? E.g. for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
 
@@ -243,29 +241,29 @@ summary <- function(timescale, type) {
   alltime <- function(type) {
     switch(type,
       pct5 = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         summarise(quantile(as.numeric(value), 0.05, na.rm = T)),
       pct95 = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         select(value) %>%
         summarise(quantile(as.numeric(value), 0.95, na.rm = T)),
       mean = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         summarise(mean(as.numeric(value), na.rm = T)),
       median = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         summarise(median(as.numeric(value), na.rm = T)),
       variance = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         summarise(var(as.numeric(value), na.rm = T)),
       numRecords = new_df_list[["fitbitactivitylogs "]] %>%
-        select(measurement, value) %>%
-        group_by(measurement) %>%
+        select(concept, value) %>%
+        group_by(concept) %>%
         drop_na() %>%
         count()
     )
@@ -289,4 +287,23 @@ summary <- function(timescale, type) {
 }
 
 summary("alltime", "median")
+
+# 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
+
+out_dir <- "deliverables"
+dir.create(out_dir)
+
+# Mimic naming structure of list of data frames
+lapply(names(new_df_list), function(x) {
+  nested_dir <- file.path(out_dir, x)
+  if (!dir.exists(nested_dir)) {
+    dir.create(nested_dir)
+  }
+})
+
+# Write data frames as CSV files inside corresponding nested folders
+lapply(names(new_df_list), function(x) {
+  nested_dir <- file.path(out_dir, x)
+  write.csv(new_df_list[[x]], file = file.path(nested_dir, paste0(x, ".csv")), row.names = FALSE)
+})
 
