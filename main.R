@@ -233,6 +233,7 @@ new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
 # 3. Add i2b2 cols (unit, type, definition); OR copy/link appropriate section of respective data frames into new column in concept map? E.g. for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
 
+
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 # For summaries: create fx for each type of summary --> all time vs weekly, add case switching within both depending on 5/95 percentile, mean, med, var, count
 
@@ -240,28 +241,28 @@ summary <- function(timescale, type) {
   
   alltime <- function(type) {
     switch(type,
-      pct5 = new_df_list[["fitbitactivitylogs "]] %>%
+      pct5 = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
         summarise(quantile(as.numeric(value), 0.05, na.rm = T)),
-      pct95 = new_df_list[["fitbitactivitylogs "]] %>%
+      pct95 = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
-        select(value) %>%
+        # select(value) %>%
         summarise(quantile(as.numeric(value), 0.95, na.rm = T)),
-      mean = new_df_list[["fitbitactivitylogs "]] %>%
+      mean = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
         summarise(mean(as.numeric(value), na.rm = T)),
-      median = new_df_list[["fitbitactivitylogs "]] %>%
+      median = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
         summarise(median(as.numeric(value), na.rm = T)),
-      variance = new_df_list[["fitbitactivitylogs "]] %>%
+      variance = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
         summarise(var(as.numeric(value), na.rm = T)),
-      numRecords = new_df_list[["fitbitactivitylogs "]] %>%
+      numRecords = new_df_list$fitbitactivitylogs %>%
         select(concept, value) %>%
         group_by(concept) %>%
         drop_na() %>%
@@ -286,7 +287,7 @@ summary <- function(timescale, type) {
   )
 }
 
-summary("alltime", "median")
+out <- summary("alltime", "median")
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
