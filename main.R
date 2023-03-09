@@ -115,6 +115,10 @@ all_cols$name %<>% {
   gsub("\\s\\d+", "", .)
 }
 
+all_cols$name %<>% {
+  gsub("\\d", "", .)
+}
+
 tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
   # append(all_cols$value[grepl("date", (all_cols$value %>% tolower())) & !grepl("HKDate", all_cols$value)]) %>%
