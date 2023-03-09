@@ -13,7 +13,8 @@ install_load(
   "arrow",
   "googlesheets4",
   "readr",
-  "reshape2"
+  "reshape2",
+  "lubridate"
 )
 # install_github(
 #   repo="https://github.com/generalui/synapser/tree/reticulate",
@@ -241,45 +242,79 @@ summary <- function(timescale, type) {
   
   alltime <- function(type) {
     switch(type,
-      pct5 = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        summarise(quantile(as.numeric(value), 0.05, na.rm = T)),
-      pct95 = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        # select(value) %>%
-        summarise(quantile(as.numeric(value), 0.95, na.rm = T)),
-      mean = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        summarise(mean(as.numeric(value), na.rm = T)),
-      median = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        summarise(median(as.numeric(value), na.rm = T)),
-      variance = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        summarise(var(as.numeric(value), na.rm = T)),
-      numRecords = new_df_list$fitbitactivitylogs %>%
-        select(concept, value) %>%
-        group_by(concept) %>%
-        drop_na() %>%
-        count()
+           pct5 = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             summarise("5th_pct" = quantile(as.numeric(value), 0.05, na.rm = T)),
+           pct95 = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             # select(value) %>%
+             summarise("95th_pct" = quantile(as.numeric(value), 0.95, na.rm = T)),
+           mean = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             summarise("mean" = mean(as.numeric(value), na.rm = T)),
+           median = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             summarise("median" = median(as.numeric(value), na.rm = T)),
+           variance = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             summarise("variance" = var(as.numeric(value), na.rm = T)),
+           numrecords = new_df_list$fitbitactivitylogs %>%
+             select(concept, value) %>%
+             group_by(concept) %>%
+             drop_na() %>%
+             count() %>%
+             rename(num_records = n)
     )
   }
 
   weekly <- function(type) {
     switch(type,
-      pct5 = ,
-      pct95 = ,
-      mean = ,
-      median = ,
-      variance = ,
-      numRecords = 
+           pct5 = new_df_list$fitbitactivitylogs %>% 
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             summarise("5th_pct" = quantile(as.numeric(value), 0.05, na.rm = T)),
+           pct95 = new_df_list$fitbitactivitylogs %>%
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             summarise("95th_pct" = quantile(as.numeric(value), 0.95, na.rm = T)),
+           mean = new_df_list$fitbitactivitylogs %>%
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             summarise("mean" = mean(as.numeric(value), na.rm = T)),
+           median = new_df_list$fitbitactivitylogs %>%
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             summarise("median" = median(as.numeric(value), na.rm = T), .groups = "keep"),
+           variance = new_df_list$fitbitactivitylogs %>%
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             summarise("variance" = var(as.numeric(value), na.rm = T)),
+           numrecords = new_df_list$fitbitactivitylogs %>%
+             select(concept, value, export_end_date) %>%
+             mutate(export_end_date = date(export_end_date)) %>% 
+             mutate(week_index = (as.integer(as.numeric(interval(min(export_end_date), export_end_date), "weeks"))+1)) %>%
+             group_by(concept, week_index) %>%
+             drop_na() %>%
+             count() %>%
+             rename(num_records = n)
     )
   }
+  
 
   switch(timescale,
     alltime = alltime(type),
@@ -287,7 +322,7 @@ summary <- function(timescale, type) {
   )
 }
 
-out <- summary("alltime", "median")
+out <- summary("weekly", "median")
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
