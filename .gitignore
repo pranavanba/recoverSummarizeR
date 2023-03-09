@@ -42,8 +42,9 @@ vignettes/*.pdf
 .RDataTmp
 .RDataTmp1
 
-# Raw data directories
+# Data directories
 /raw-data
+/deliverables
 
 # MacOS hidden files
 .DS_Store
