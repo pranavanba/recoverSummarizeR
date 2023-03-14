@@ -189,41 +189,81 @@ summary <- function(timescale, type) {
 
   weekly <- function(type) {
     switch(type,
-           pct5 = new_df_list$fitbitactivitylogs %>% 
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = date(EndDate)) %>% 
-             mutate(week_index = (as.integer(as.numeric(interval(min(EndDate), EndDate), "weeks"))+1)) %>%
-             mutate(abs_week_num = week(EndDate)) %>% 
-             group_by(ParticipantIdentifier, concept, week_index) %>%
-             summarise("5th_pct" = quantile(as.numeric(value), 0.05, na.rm = T)),
+           pct5 = new_df_list$fitbitactivitylogs %>%
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+             group_by(ParticipantIdentifier, concept, year, week) %>%
+             summarise("value" = quantile(as.numeric(value), 0.05, na.rm = T), .groups = "keep") %>% 
+             ungroup() %>% 
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value),
            pct95 = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = date(EndDate)) %>% 
-             mutate(week_index = (as.integer(as.numeric(interval(min(EndDate), EndDate), "weeks"))+1)) %>%
-             mutate(abs_week_num = week(EndDate)) %>% 
-             group_by(ParticipantIdentifier, concept, week_index) %>%
-             summarise("95th_pct" = quantile(as.numeric(value), 0.95, na.rm = T)),
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+             group_by(ParticipantIdentifier, concept, year, week) %>%
+             summarise("value" = quantile(as.numeric(value), 0.95, na.rm = T), .groups = "keep") %>% 
+             ungroup() %>% 
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value),
            mean = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = date(EndDate)) %>% 
-             mutate(week_index = (as.integer(as.numeric(interval(min(EndDate), EndDate), "weeks"))+1)) %>%
-             mutate(abs_week_num = week(EndDate)) %>% 
-             group_by(ParticipantIdentifier, concept, week_index) %>%
-             summarise("mean" = mean(as.numeric(value), na.rm = T)),
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+             group_by(ParticipantIdentifier, concept, year, week) %>%
+             summarise("value" = mean(as.numeric(value), na.rm = T), .groups = "keep") %>% 
+             ungroup() %>% 
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value),
            median = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = date(EndDate)) %>% 
-             mutate(week_index = (as.integer(as.numeric(interval(min(EndDate), EndDate), "weeks"))+1)) %>%
-             mutate(abs_week_num = week(EndDate)) %>% 
-             group_by(ParticipantIdentifier, concept, week_index) %>%
-             summarise("median" = median(as.numeric(value), na.rm = T), .groups = "keep"),
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+             group_by(ParticipantIdentifier, concept, year, week) %>%
+             summarise("value" = median(as.numeric(value), na.rm = T), .groups = "keep") %>% 
+             ungroup() %>% 
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value),
            variance = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = date(EndDate)) %>% 
-             mutate(week_index = (as.integer(as.numeric(interval(min(EndDate), EndDate), "weeks"))+1)) %>%
-             mutate(abs_week_num = week(EndDate)) %>% 
-             group_by(ParticipantIdentifier, concept, week_index) %>%
-             summarise("variance" = var(as.numeric(value), na.rm = T)),
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+             group_by(ParticipantIdentifier, concept, year, week) %>%
+             summarise("value" = var(as.numeric(value), na.rm = T), .groups = "keep") %>% 
+             ungroup() %>% 
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value),
            numrecords = new_df_list$fitbitactivitylogs %>%
              select(ParticipantIdentifier, concept, value, StartDate) %>%
              mutate(StartDate = ymd_hms(StartDate),
@@ -233,14 +273,13 @@ summary <- function(timescale, type) {
              group_by(ParticipantIdentifier, concept, year, week) %>%
              drop_na() %>%
              count() %>% 
-             rename(num_records = n) %>% 
+             rename(value = n) %>% 
              ungroup() %>% 
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
                       days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
              select(-c(year, week)) %>% 
-             rename(value = num_records) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value)
     )
   }
@@ -252,7 +291,7 @@ summary <- function(timescale, type) {
   )
 }
 
-out <- summary("weekly", "numrecords")
+out <- summary("alltime", "pct95")
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
