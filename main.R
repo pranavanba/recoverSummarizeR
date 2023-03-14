@@ -201,7 +201,11 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value),
            pct95 = new_df_list$fitbitactivitylogs %>%
@@ -216,7 +220,11 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value),
            mean = new_df_list$fitbitactivitylogs %>%
@@ -231,7 +239,11 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value),
            median = new_df_list$fitbitactivitylogs %>%
@@ -246,7 +258,11 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value),
            variance = new_df_list$fitbitactivitylogs %>%
@@ -261,7 +277,11 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
              select(ParticipantIdentifier, week_summary_start_date, concept, value),
            numrecords = new_df_list$fitbitactivitylogs %>%
@@ -278,9 +298,13 @@ summary <- function(timescale, type) {
              mutate(week_summary_start_date = 
                       make_date(year, 1, 1) + 
                       weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+                      days(7 - wday(make_date(year, 1, 1)) + 1),
+                    week_summary_end_date = 
+                      week_summary_start_date + 
+                      weeks(1) - 
+                      days(1)) %>% 
              select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, concept, value)
+             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value)
     )
   }
   
@@ -291,7 +315,7 @@ summary <- function(timescale, type) {
   )
 }
 
-out <- summary("alltime", "pct95")
+out <- summary("weekly", "numrecords")
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
