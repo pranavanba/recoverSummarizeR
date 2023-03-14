@@ -158,7 +158,7 @@ summary <- function(timescale, type) {
   alltime <- function(type) {
     switch(type,
            pct5 = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              mutate("quantile" = quantile(as.numeric(value), 0.05, na.rm = T)) %>% 
              select(-c(value)) %>% 
@@ -168,7 +168,7 @@ summary <- function(timescale, type) {
              distinct() %>% 
              ungroup(),
            pct95 = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              mutate("quantile" = quantile(as.numeric(value), 0.95, na.rm = T)) %>% 
              select(-c(value)) %>% 
@@ -178,7 +178,7 @@ summary <- function(timescale, type) {
              distinct() %>% 
              ungroup(),
            mean = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              mutate("mean" = mean(as.numeric(value), na.rm = T)) %>% 
              select(-c(value)) %>% 
@@ -188,7 +188,7 @@ summary <- function(timescale, type) {
              distinct() %>% 
              ungroup(),
            median = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              mutate("median" = median(as.numeric(value), na.rm = T)) %>% 
              select(-c(value)) %>% 
@@ -198,7 +198,7 @@ summary <- function(timescale, type) {
              distinct() %>% 
              ungroup(),
            variance = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              mutate("variance" = var(as.numeric(value), na.rm = T)) %>% 
              select(-c(value)) %>% 
@@ -208,7 +208,7 @@ summary <- function(timescale, type) {
              distinct() %>% 
              ungroup(),
            numrecords = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, StartDate, EndDate) %>%
+             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
              group_by(ParticipantIdentifier, concept) %>%
              drop_na() %>%
              add_count() %>%
@@ -349,7 +349,7 @@ summary <- function(timescale, type) {
   )
 }
 
-out <- summary("alltime", "median")
+out <- summary("weekly", "pct95")
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
