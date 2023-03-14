@@ -225,17 +225,23 @@ summary <- function(timescale, type) {
              group_by(ParticipantIdentifier, concept, week_index) %>%
              summarise("variance" = var(as.numeric(value), na.rm = T)),
            numrecords = new_df_list$fitbitactivitylogs %>%
-             select(ParticipantIdentifier, concept, value, EndDate) %>%
-             mutate(EndDate = ymd_hms(EndDate),
-                    year = year(EndDate),
-                    week = epiweek(EndDate)) %>%
-             filter(EndDate >= floor_date(min(EndDate), unit = "week", week_start = "Sunday")) %>%
+             select(ParticipantIdentifier, concept, value, StartDate) %>%
+             mutate(StartDate = ymd_hms(StartDate),
+                    year = year(StartDate),
+                    week = epiweek(StartDate)) %>%
+             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
              group_by(ParticipantIdentifier, concept, year, week) %>%
              drop_na() %>%
              count() %>% 
              rename(num_records = n) %>% 
              ungroup() %>% 
-             mutate(date = make_date(year, 1, 1) + weeks(week - 1) + days(7 - wday(make_date(year, 1, 1)) + 1))
+             mutate(week_summary_start_date = 
+                      make_date(year, 1, 1) + 
+                      weeks(week - 1) + 
+                      days(7 - wday(make_date(year, 1, 1)) + 1)) %>% 
+             select(-c(year, week)) %>% 
+             rename(value = num_records) %>% 
+             select(ParticipantIdentifier, week_summary_start_date, concept, value)
     )
   }
   
