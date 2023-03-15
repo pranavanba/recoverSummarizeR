@@ -105,7 +105,7 @@ identical(
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
-# 1. Store vector of metadata cols (all other cols will be treated as signal/concept cols)
+# 1. Store vectors of metadata and concepts cols
 
 all_cols <- lapply(df_list, names) %>%
   unlist() %>%
@@ -121,22 +121,32 @@ all_cols$name %<>% {
 
 tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
-  # append(all_cols$value[grepl("date", (all_cols$value %>% tolower())) & !grepl("HKDate", all_cols$value)]) %>%
   unique()
 
-metadata_cols <- tmp[-grep("heartrate|calories|steps", (tmp %>% tolower()))]
+metadata <- tmp[-grep("heartrate|calories|steps|duration", (tmp %>% tolower()))]
+
+concepts <- concept_map$concept_cd %>% str_extract("(?<=:)[^:]*$") %>% unique()
+concepts %<>% {gsub("Mins", "Minutes", .)}
+concepts %<>% {gsub("AvgHR", "AverageHeartRate", .)}
+concepts %<>% {gsub("SpO2", "SpO2_", .)}
+concepts %<>% {gsub("Brth", "Breath", .)}
+concepts %<>% {gsub("HrvD", "Hrv_D", .)}
+concepts %<>% {gsub("RestingHR$", "RestingHeartRate", ., perl = T)}
+concepts %<>% unique()
+
+metadata <- metadata[!metadata %in% tolower(concepts)]
 
 rm(tmp)
 
-# 2. Melt data frames (know which cols are metadata or concept data based on list of cols created in previous step) and update structure: concept (variable) and value (variable value) cols
+# 2. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
 
 # Define a function to split up a data frame
 split_df <- function(df) {
   # Get indices of signal concept columns
-  signal_cols <- setdiff(names(df), metadata_cols)
+  signal_cols <- setdiff(names(df), metadata)
   
   # Melt the data frame to create a single "value" column
-  df_melt <- melt(df, id.vars = intersect(metadata_cols, names(df)), measure.vars = signal_cols,
+  df_melt <- melt(df, id.vars = intersect(metadata, names(df)), measure.vars = signal_cols,
                   variable.name = "concept", value.name = "value")
   
   return(df_melt)
@@ -147,7 +157,14 @@ new_df_list <- lapply(df_list, split_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
-# 3. Add i2b2 cols (unit, type, definition); OR copy/link appropriate section of respective data frames into new column in concept map? E.g. for second idea: value of new col `data` for row with concept_cd==MHP:Fitbit:DailyData:BodyBmi would be the subset of data matching BodyBmi data from fitbitdailydata data frame
+# 3. Format non-summarized data as per i2b2 specs
+
+# Check that columns in data frames are not found in "concepts" list (which would indicate that not all concepts from original data sets were melted from wide to long format)
+
+if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), function(x) T %in% x))==T) {
+  break
+}
+
 
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
