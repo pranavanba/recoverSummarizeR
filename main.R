@@ -123,7 +123,7 @@ tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
   unique()
 
-metadata <- tmp[-grep("heartrate|calories|steps|duration", (tmp %>% tolower()))]
+metadata <- tmp[-grep("heartrate|calories|steps|duration|dateofbirth", (tmp %>% tolower()))]
 
 concepts <- concept_map$concept_cd %>% str_extract("(?<=:)[^:]*$") %>% unique()
 concepts %<>% {gsub("Mins", "Minutes", .)}
@@ -165,7 +165,8 @@ if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), func
   break
 }
 
-
+new_df_list$enrolledparticipants %<>% 
+  mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
@@ -534,17 +535,19 @@ tmpout <- summary(new_df_list$fitbitactivitylogs)
 out_dir <- "deliverables"
 dir.create(out_dir)
 
-# Mimic naming structure of list of data frames
-lapply(names(new_df_list), function(x) {
-  nested_dir <- file.path(out_dir, x)
-  if (!dir.exists(nested_dir)) {
-    dir.create(nested_dir)
-  }
-})
+# # Mimic naming structure of list of data frames
+# lapply(names(new_df_list), function(x) {
+#   nested_dir <- file.path(out_dir, x)
+#   if (!dir.exists(nested_dir)) {
+#     dir.create(nested_dir)
+#   }
+# })
+# 
+# # Write data frames as CSV files inside corresponding nested folders
+# lapply(names(new_df_list), function(x) {
+#   nested_dir <- file.path(out_dir, x)
+#   write.csv(new_df_list[[x]], file = file.path(nested_dir, paste0(x, ".csv")), row.names = FALSE)
+# })
 
-# Write data frames as CSV files inside corresponding nested folders
-lapply(names(new_df_list), function(x) {
-  nested_dir <- file.path(out_dir, x)
-  write.csv(new_df_list[[x]], file = file.path(nested_dir, paste0(x, ".csv")), row.names = FALSE)
-})
+write.csv(tmpout, file = 'deliverables/summarized_concepts.csv', row.names = F)
 
