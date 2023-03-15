@@ -151,10 +151,8 @@ new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
-# For summaries: create fx for each type of summary --> all time vs weekly, add case switching within both depending on 5/95 percentile, mean, med, var, count
 
 summary <- function(dataset) {
-  
   dataset_name <- deparse(substitute(dataset))
   
   if (grepl("\\$fitbit", dataset_name)) {
@@ -165,260 +163,353 @@ summary <- function(dataset) {
     dataset_name <- gsub("^.*\\$", "", dataset_name)
   }
   
-  # alltime <- function(type) {
-  #   switch(type,
-           all_pct5 <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             mutate("quantile" = quantile(as.numeric(value), 0.05, na.rm = T)) %>% 
-             select(-c(value)) %>% 
-             rename(value = quantile) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "5pct",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           all_pct95 <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             mutate("quantile" = quantile(as.numeric(value), 0.95, na.rm = T)) %>% 
-             select(-c(value)) %>% 
-             rename(value = quantile) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "95pct",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           all_mean <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             mutate("mean" = mean(as.numeric(value), na.rm = T)) %>% 
-             select(-c(value)) %>% 
-             rename(value = mean) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "mean",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           all_median <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             mutate("median" = median(as.numeric(value), na.rm = T)) %>% 
-             select(-c(value)) %>% 
-             rename(value = median) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "median",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           all_variance <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             mutate("variance" = var(as.numeric(value), na.rm = T)) %>% 
-             select(-c(value)) %>% 
-             rename(value = variance) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "variance",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           all_numrecords <- dataset %>%
-             select(ParticipantIdentifier, StartDate, EndDate, concept, value, ) %>%
-             group_by(ParticipantIdentifier, concept) %>%
-             drop_na() %>%
-             add_count() %>%
-             select(-c(value)) %>% 
-             rename(value = n) %>% 
-             mutate(StartDate = as_datetime(min(StartDate)), 
-                    EndDate = as_datetime(max(EndDate)),
-                    timescale = "alltime",
-                    stat = "numrecords",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             distinct() %>% 
-             ungroup() %>% 
-             select(-c(timescale, stat))#,
-           #   )
-  # }
-
-  # weekly <- function(type) {
-  #   switch(type,
-           weekly_pct5 <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             summarise("value" = quantile(as.numeric(value), 0.05, na.rm = T), .groups = "keep") %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "5pct",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           weekly_pct95 <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             summarise("value" = quantile(as.numeric(value), 0.95, na.rm = T), .groups = "keep") %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "95pct",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           weekly_mean <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             summarise("value" = mean(as.numeric(value), na.rm = T), .groups = "keep") %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "mean",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           weekly_median <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             summarise("value" = median(as.numeric(value), na.rm = T), .groups = "keep") %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "median",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           weekly_variance <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             summarise("value" = var(as.numeric(value), na.rm = T), .groups = "keep") %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "variance",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           weekly_numrecords <- dataset %>%
-             select(ParticipantIdentifier, concept, value, StartDate) %>%
-             mutate(StartDate = ymd_hms(StartDate),
-                    year = year(StartDate),
-                    week = epiweek(StartDate)) %>%
-             filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
-             group_by(ParticipantIdentifier, concept, year, week) %>%
-             drop_na() %>%
-             count() %>% 
-             rename(value = n) %>% 
-             ungroup() %>% 
-             mutate(week_summary_start_date = 
-                      make_date(year, 1, 1) + 
-                      weeks(week - 1) + 
-                      days(7 - wday(make_date(year, 1, 1)) + 1),
-                    week_summary_end_date = 
-                      week_summary_start_date + 
-                      weeks(1) - 
-                      days(1),
-                    timescale = "weekly",
-                    stat = "numrecords",
-                    concept = paste0("mhp:", dataset_name, ":", timescale, ":", stat, ":", concept)) %>% 
-             select(-c(year, week)) %>% 
-             select(ParticipantIdentifier, week_summary_start_date, week_summary_end_date, concept, value) %>% 
-             rename(StartDate = week_summary_start_date) %>% 
-             rename(EndDate = week_summary_end_date)#,
-           #   )
-  # }
+  all_pct5 <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    mutate("quantile" = quantile(as.numeric(value), 0.05, na.rm = T)) %>%
+    select(-c(value)) %>%
+    rename(value = quantile) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "5pct",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
   
-
-  # switch(timescale,
-  #   alltime = alltime(type),
-  #   weekly = weekly(type)
-  # )
-           result <- bind_rows(all_pct5, all_pct95, all_mean,
-                               all_median, all_variance, all_numrecords,
-                               weekly_pct5, weekly_pct95, weekly_mean,
-                               weekly_median, weekly_variance, weekly_numrecords)
-           return(result)
+  all_pct95 <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    mutate("quantile" = quantile(as.numeric(value), 0.95, na.rm = T)) %>%
+    select(-c(value)) %>%
+    rename(value = quantile) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "95pct",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
+  
+  all_mean <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    mutate("mean" = mean(as.numeric(value), na.rm = T)) %>%
+    select(-c(value)) %>%
+    rename(value = mean) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "mean",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
+  
+  all_median <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    mutate("median" = median(as.numeric(value), na.rm = T)) %>%
+    select(-c(value)) %>%
+    rename(value = median) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "median",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
+  
+  all_variance <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    mutate("variance" = var(as.numeric(value), na.rm = T)) %>%
+    select(-c(value)) %>%
+    rename(value = variance) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "variance",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
+  
+  all_numrecords <- 
+    dataset %>%
+    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    group_by(ParticipantIdentifier, concept) %>%
+    drop_na() %>%
+    add_count() %>%
+    select(-c(value)) %>%
+    rename(value = n) %>%
+    mutate(
+      StartDate = as_datetime(min(StartDate)),
+      EndDate = as_datetime(max(EndDate)),
+      timescale = "alltime",
+      stat = "numrecords",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    distinct() %>%
+    ungroup() %>%
+    select(-c(timescale, stat))
+  
+  weekly_pct5 <- 
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    summarise("value" = quantile(as.numeric(value), 0.05, na.rm = T),
+              .groups = "keep") %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "5pct",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  weekly_pct95 <- 
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    summarise("value" = quantile(as.numeric(value), 0.95, na.rm = T),
+              .groups = "keep") %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "95pct",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  weekly_mean <- 
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    summarise("value" = mean(as.numeric(value), na.rm = T), .groups = "keep") %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "mean",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  weekly_median <- 
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    summarise("value" = median(as.numeric(value), na.rm = T), .groups = "keep") %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "median",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  weekly_variance <- 
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    summarise("value" = var(as.numeric(value), na.rm = T), .groups = "keep") %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "variance",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  weekly_numrecords <-
+    dataset %>%
+    select(ParticipantIdentifier, concept, value, StartDate) %>%
+    mutate(
+      StartDate = ymd_hms(StartDate),
+      year = year(StartDate),
+      week = epiweek(StartDate)
+    ) %>%
+    filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
+    group_by(ParticipantIdentifier, concept, year, week) %>%
+    drop_na() %>%
+    count() %>%
+    rename(value = n) %>%
+    ungroup() %>%
+    mutate(
+      week_summary_start_date =
+        make_date(year, 1, 1) +
+        weeks(week - 1) +
+        days(7 - wday(make_date(year, 1, 1)) + 1),
+      week_summary_end_date =
+        week_summary_start_date +
+        weeks(1) -
+        days(1),
+      timescale = "weekly",
+      stat = "numrecords",
+      concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
+    ) %>%
+    select(-c(year, week)) %>%
+    select(
+      ParticipantIdentifier,
+      week_summary_start_date,
+      week_summary_end_date,
+      concept,
+      value
+    ) %>%
+    rename(StartDate = week_summary_start_date) %>%
+    rename(EndDate = week_summary_end_date)
+  
+  result <-
+    bind_rows(
+      all_pct5,
+      all_pct95,
+      all_mean,
+      all_median,
+      all_variance,
+      all_numrecords,
+      weekly_pct5,
+      weekly_pct95,
+      weekly_mean,
+      weekly_median,
+      weekly_variance,
+      weekly_numrecords
+    )
+  return(result)
 }
 
-# out <- summary("weekly", "pct95")
 tmpout <- summary(new_df_list$fitbitactivitylogs)
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
