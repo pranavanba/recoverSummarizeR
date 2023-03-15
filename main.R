@@ -168,6 +168,34 @@ if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), func
 new_df_list$enrolledparticipants %<>% 
   mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
 
+i2b2_suffix <- function(dataset) {
+  dataset_name <- deparse(substitute(dataset))
+  
+  if (grepl("\\$fitbit", dataset_name)) {
+    dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
+  } else if (grepl("\\$healthkitv2", dataset_name)) {
+    dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
+  } else if (grepl("symptomlog$", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
+  } else if (grepl("symptomlog_value_s", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
+  } else if (grepl("symptomlog_value_t", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
+  } else {
+    dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
+  }
+  
+  result <- 
+    dataset %>% 
+    mutate(concept = paste0("mhp:", dataset_name, ":", concept))
+  
+  return(result)
+}
+
+tmpout_non_summarized <- 
+  i2b2_suffix(new_df_list$fitbitactivitylogs) %>% 
+  select(ParticipantIdentifier, StartDate, concept, value)
+
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
 summary <- function(dataset) {
@@ -528,7 +556,7 @@ summary <- function(dataset) {
   return(result)
 }
 
-tmpout <- summary(new_df_list$fitbitactivitylogs)
+tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
 
 # 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
 
@@ -549,5 +577,6 @@ dir.create(out_dir)
 #   write.csv(new_df_list[[x]], file = file.path(nested_dir, paste0(x, ".csv")), row.names = FALSE)
 # })
 
-write.csv(tmpout, file = 'deliverables/summarized_concepts.csv', row.names = F)
+write.csv(tmpout_summarized, file = 'deliverables/summarized_concepts.csv', row.names = F)
+write.csv(tmpout_non_summarized, file = 'deliverables/non_summarized_concepts.csv', row.names = F)
 
