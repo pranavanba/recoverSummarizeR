@@ -558,24 +558,10 @@ summary <- function(dataset) {
 
 tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
 
-# 5. Output data frames as CSVs to nested folders in a directory mimicking the structure of the list of data frames
+# 5. Output data frames as CSVs to 'deliverables' folder
 
 out_dir <- "deliverables"
 dir.create(out_dir)
-
-# # Mimic naming structure of list of data frames
-# lapply(names(new_df_list), function(x) {
-#   nested_dir <- file.path(out_dir, x)
-#   if (!dir.exists(nested_dir)) {
-#     dir.create(nested_dir)
-#   }
-# })
-# 
-# # Write data frames as CSV files inside corresponding nested folders
-# lapply(names(new_df_list), function(x) {
-#   nested_dir <- file.path(out_dir, x)
-#   write.csv(new_df_list[[x]], file = file.path(nested_dir, paste0(x, ".csv")), row.names = FALSE)
-# })
 
 write.csv(tmpout_summarized, file = 'deliverables/summarized_concepts.csv', row.names = F)
 write.csv(tmpout_non_summarized, file = 'deliverables/non_summarized_concepts.csv', row.names = F)
