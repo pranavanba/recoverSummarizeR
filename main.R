@@ -139,7 +139,7 @@ metadata <- metadata[!metadata %in% tolower(concepts)]
 
 rm(tmp)
 
-# 2a. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
+# 2. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
 
 # Define a function to split up a data frame
 split_df <- function(df) {
@@ -158,29 +158,7 @@ new_df_list <- lapply(df_list, split_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
-# 2b. Check overlap of concepts
-
-approved_concepts <- tibble(name = "concept_map", value = str_extract(concept_map$concept_cd, "(?<=:)[^:]+$") %>% unique())
-approved_concepts$value %<>% 
-  gsub("Mins", "Minutes", .) %>% 
-  gsub("AvgHR", "AverageHeartRate", .) %>% 
-  gsub("SpO2", "SpO2_", .) %>% 
-  gsub("Brth", "Breath", .) %>% 
-  gsub("HrvD", "Hrv_D", .)
-approved_concepts$value %<>% {gsub("RestingHR$", "RestingHeartRate", ., perl = T)}
-
-new_df_list_concepts <- lapply(new_df_list, function(x) x$concept %>% unique()) %>% enframe() %>% unnest(cols = value)
-new_df_list_concepts$included <- new_df_list_concepts$value %in% approved_concepts$value
-new_df_list_concepts$value[new_df_list_concepts$name == "enrolledparticipants"] <- 
-  str_extract(new_df_list_concepts$value[new_df_list_concepts$name == "enrolledparticipants"], "(?<=:)[^:]+$")
-
 # 3. Format non-summarized data as per i2b2 specs
-
-# Check that columns in data frames are not found in "concepts" list (which would indicate that not all concepts from original data sets were melted from wide to long format)
-
-if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), function(x) T %in% x))==T) {
-  break
-}
 
 new_df_list$enrolledparticipants %<>% 
   mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
