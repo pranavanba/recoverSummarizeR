@@ -68,9 +68,7 @@ names(tmp) <-
   gsub("\\.(parquet|tsv|ndjson)$",
        "",
        paste(basename(dirname(file_paths)), "-", basename(file_paths)))
-names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
-names(tmp) <- sub("dataset_", "", names(tmp))
-names(tmp) <- gsub(" ", "", names(tmp))
+names(tmp) <- gsub("(dataset_|-.*\\.snappy| )", "", names(tmp))
 
 # Include only fitbit datasets for now
 tmp <- tmp[grepl("fitbit", tolower(names(tmp)))]
