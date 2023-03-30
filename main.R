@@ -73,7 +73,8 @@ names(tmp) <- sub("dataset_", "", names(tmp))
 names(tmp) <- gsub(" ", "", names(tmp))
 
 # Include only fitbit datasets for now
-tmp <- tmp[grepl("fitbit", names(tmp))]
+tmp <- tmp[grepl("fitbit", tolower(names(tmp)))]
+tmp <- tmp[!grepl("manifest", tolower(names(tmp)))]
 
 # May need to update the following to accommodate multiple multi-part parquet
 # files; currently works with only one mutli-part file: fitbitintradaycombined
@@ -81,27 +82,21 @@ tmp <- tmp[grepl("fitbit", names(tmp))]
 # files inside the respective raw-data nested folder before reading all into a
 # df.
 multi_part_dfs <- list(names(tmp)[duplicated(names(tmp))] %>% unique())
+names(multi_part_dfs) <- names(tmp)[duplicated(names(tmp))] %>% unique()
 
-tmp_df_list <- bind_rows(tmp[which(names(tmp) == multi_part_dfs)])
+tmp_fitbitintradaycombined <- bind_rows(tmp[which(names(tmp) == multi_part_dfs)])
 
 tmp2 <- tmp[!grepl(multi_part_dfs, names(tmp))]
 
-df_list <- c(tmp2, list(tmp_df_list))
+df_list <- c(tmp2, list(tmp_fitbitintradaycombined))
 
-names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <-
-  unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
+names(df_list)[(df_list %>% names() %>% {(nchar(.)==0)} %>% which())] <- 
+  names(multi_part_dfs)
 
-rm(tmp, tmp2, tmp_df_list, multi_part_dfs)
+# names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <-
+#   unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
 
-
-# Find common columns to merge on ---------------------------------------------------------------------------------
-
-# Common cols between fitbit sleep log files
-identical(
-  (df_list$fitbitsleeplogs$LogId %>% unique() %>% sort()), 
-  (df_list$fitbitsleeplogs_sleeplogdetails$LogId %>% unique() %>% sort())
-)
-
+rm(tmp, multi_part_dfs, tmp_fitbitintradaycombined,  tmp2)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
