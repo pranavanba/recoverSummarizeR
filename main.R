@@ -98,7 +98,7 @@ rm(tmp, multi_part_dfs, tmp_fitbitintradaycombined,  tmp2)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
-# 1. Store vectors of metadata and concepts cols
+# 1. Store approved and excluded concepts columns
 
 all_cols <- lapply(df_list, names) %>%
   unlist() %>%
@@ -108,25 +108,32 @@ all_cols$name %<>% {
   gsub("\\s\\d+|\\d", "", .)
 }
 
-metadata <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
-  append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
-  unique()
+approved_concepts <- 
+  concept_map$concept_cd %>%
+  grep("^(?!.*Trigger).+$", ., perl = T, value = T) %>% 
+  str_extract("(?<=:)[^:]*$") %>% unique()
 
-metadata <- metadata[-grep("heartrate|calories|steps|duration|dateofbirth", (metadata %>% tolower()))]
-
-concepts <- concept_map$concept_cd %>% str_extract("(?<=:)[^:]*$") %>% unique()
-concepts %<>% 
+approved_concepts %<>% 
   {gsub("Mins", "Minutes", .)} %>% 
   {gsub("AvgHR", "AverageHeartRate", .)} %>% 
-  {gsub("SpO2", "SpO2_", .)} %>% 
+  {gsub("SpO2(?!_)", "SpO2_", ., perl = T)} %>% 
   {gsub("Brth", "Breath", .)} %>% 
-  {gsub("HrvD", "Hrv_D", .)}
-concepts %<>% {gsub("RestingHR$", "RestingHeartRate", ., perl = T)}
-concepts %<>% unique()
+  {gsub("HrvD", "Hrv_D", .)} %>% 
+  {gsub("RestingHR$", "RestingHeartRate", ., perl = T)} %>% 
+  {gsub("SleepBreath", "SleepSummaryBreath", .)} %>% 
+  unique()
 
-metadata <- metadata[!metadata %in% tolower(concepts)]
+excluded_concepts <- all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts))] %>% unique()
 
-rm(metadata)
+# excluded_concepts <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
+#   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
+#   unique()
+
+# excluded_concepts <- excluded_concepts[-grep("heartrate|calories|steps|duration|dateofbirth", (excluded_concepts %>% tolower()))]
+
+excluded_concepts <- excluded_concepts[!(tolower(excluded_concepts) %in% tolower(approved_concepts))]
+
+# rm(excluded_concepts)
 
 # 2. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
 
