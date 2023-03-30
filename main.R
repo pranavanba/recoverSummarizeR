@@ -41,7 +41,7 @@ concept_map <-
   googlesheets4::read_sheet(
     "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
   )
-
+1
 break
 
 # Read parquet files to df ------------------------------------------------
@@ -94,7 +94,7 @@ names(df_list)[(df_list %>% names() %>% {(nchar(.)==0)} %>% which())] <-
 # names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <-
 #   unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
 
-rm(tmp, multi_part_dfs, tmp_fitbitintradaycombined,  tmp2)
+rm(parent_directory, file_paths, tmp, multi_part_dfs, tmp_fitbitintradaycombined,  tmp2)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
@@ -135,57 +135,69 @@ excluded_concepts <- excluded_concepts[!(tolower(excluded_concepts) %in% tolower
 
 # rm(excluded_concepts)
 
-# 2. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
+# 2. Melt data frames from wide to long with new concept (variable) and value (variable value) cols (we know which cols are approved or excluded based on lists of concepts created in previous step)
 
-# Define a function to split up a data frame
-split_df <- function(df) {
-  # Get indices of signal concept columns
-  signal_cols <- setdiff(names(df), metadata)
+# Define a function to melt a data frame
+melt_df <- function(df) {
+  # Get indices of approved concept columns
+  approved_cols <- setdiff(names(df), excluded_concepts)
   
   # Melt the data frame to create a single "value" column
-  df_melt <- melt(df, id.vars = intersect(metadata, names(df)), measure.vars = signal_cols,
+  df_melt <- melt(df, id.vars = intersect(excluded_concepts, names(df)), measure.vars = approved_cols,
                   variable.name = "concept", value.name = "value")
   
   return(df_melt)
 }
 
-# Apply the split_df function to the list of data frames
-new_df_list <- lapply(df_list, split_df)
+# Apply the melt_df function to the list of data frames
+new_df_list <- lapply(df_list, melt_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
 # 3. Format non-summarized data as per i2b2 specs
 
-new_df_list$enrolledparticipants %<>% 
-  mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
+# new_df_list$enrolledparticipants %<>% 
+#   mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
 
-i2b2_suffix <- function(dataset) {
-  dataset_name <- deparse(substitute(dataset))
-  
-  if (grepl("\\$fitbit", dataset_name)) {
-    dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
-  } else if (grepl("\\$healthkitv2", dataset_name)) {
-    dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
-  } else if (grepl("symptomlog$", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
-  } else if (grepl("symptomlog_value_s", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
-  } else if (grepl("symptomlog_value_t", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
-  } else {
-    dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
-  }
-  
-  result <- 
-    dataset %>% 
-    mutate(concept = paste0("mhp:", dataset_name, ":", concept))
-  
-  return(result)
-}
+# add_i2b2_prefix <- function(dataset) {
+#   dataset_name <- deparse(substitute(dataset))
+#   
+#   if (grepl("\\$fitbit", dataset_name)) {
+#     dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
+#   } else if (grepl("\\$healthkitv2", dataset_name)) {
+#     dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
+#   } else if (grepl("symptomlog$", dataset_name)) {
+#     dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
+#   } else if (grepl("symptomlog_value_s", dataset_name)) {
+#     dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
+#   } else if (grepl("symptomlog_value_t", dataset_name)) {
+#     dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
+#   } else {
+#     dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
+#   }
+# 
+#   if ("concept" %in% colnames(dataset)) {
+#     result <- 
+#       dataset %>% 
+#       mutate(concept = paste0("mhp:", dataset_name, ":", concept))
+#     } else {
+#       result <- dataset
+#     }
+#   
+#   return(result)
+# }
 
-tmpout_non_summarized <- 
-  i2b2_suffix(new_df_list$fitbitactivitylogs) %>% 
-  select(ParticipantIdentifier, StartDate, concept, value)
+# tmpout_non_summarized <- 
+#   add_i2b2_prefix(new_df_list$fitbitactivitylogs) %>% 
+#   select(ParticipantIdentifier, matches("(?<!_)date(?!_)", perl = T), concept, value)
+
+# tmpout_non_summarized <- 
+#   lapply(new_df_list, add_i2b2_prefix) %>% 
+#   select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier", 
+#          matches("(?<!_)date(?!_)", perl = T), 
+#          if ("concept" %in% colnames(x)) "concept", 
+#          if ("value" %in% colnames(x)) "value")
+
 
 # 4. Filter data frames to include only concept variables in the concept map
 
