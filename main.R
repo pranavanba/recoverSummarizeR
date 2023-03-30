@@ -105,18 +105,14 @@ all_cols <- lapply(df_list, names) %>%
   enframe()
 
 all_cols$name %<>% {
-  gsub("\\s\\d+", "", .)
+  gsub("\\s\\d+|\\d", "", .)
 }
 
-all_cols$name %<>% {
-  gsub("\\d", "", .)
-}
-
-tmp <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
+metadata <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
   unique()
 
-metadata <- tmp[-grep("heartrate|calories|steps|duration|dateofbirth", (tmp %>% tolower()))]
+metadata <- metadata[-grep("heartrate|calories|steps|duration|dateofbirth", (metadata %>% tolower()))]
 
 concepts <- concept_map$concept_cd %>% str_extract("(?<=:)[^:]*$") %>% unique()
 concepts %<>% 
@@ -130,7 +126,7 @@ concepts %<>% unique()
 
 metadata <- metadata[!metadata %in% tolower(concepts)]
 
-rm(tmp)
+rm(metadata)
 
 # 2. Melt data frames from wide to long (we know which cols are metadata or concepts based on list of cols created in previous step) with new concept (variable) and value (variable value) cols
 
