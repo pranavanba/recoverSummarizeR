@@ -63,6 +63,7 @@ tmp <- lapply(file_paths, function(file_path) {
   }
 })
 
+# Clean up names of parquet datasets
 names(tmp) <-
   gsub("\\.(parquet|tsv|ndjson)$",
        "",
