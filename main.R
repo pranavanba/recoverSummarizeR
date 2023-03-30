@@ -199,16 +199,7 @@ new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 #          if ("value" %in% colnames(x)) "value")
 
 
-# 4. Filter data frames to include only concept variables in the concept map
-
-new_df_list$fitbitactivitylogs %>% 
-  filter(concept %in% approved_concepts$value)
-
-lapply(new_df_list, function(x) {
-  x %>% filter(concept %in% approved_concepts$value)
-  })
-
-# 5. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
+# 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
 summary <- function(dataset) {
   dataset_name <- deparse(substitute(dataset))
