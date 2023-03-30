@@ -36,3 +36,35 @@ if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), func
   break
 }
 
+
+# Check that data frames include only approved concept variables --------------------------------------------------
+
+# new_df_list$fitbitactivitylogs %>% 
+#   # filter(concept %in% approved_concepts) %>% 
+#   dim()
+
+check_df_dims <- function(list_of_dfs, approved_concepts) {
+  original_df_dims <- lapply(list_of_dfs, dim)
+  
+  filtered_df_dims <- lapply(list_of_dfs, function(x) {
+    if ("concept" %in% colnames(x)) {
+      x %>% 
+        filter(concept %in% approved_concepts) %>% 
+        dim()
+    } else {
+      dim(x)
+    }
+  })
+  
+  # Compare the dimensions of the original and filtered data frames
+  for (i in seq_along(list_of_dfs)) {
+    if (identical(original_df_dims[[i]], filtered_df_dims[[i]])) {
+      message("Dimensions of original and filtered data frame ", i, " match.")
+    } else {
+      message("Dimensions of original and filtered data frame ", i, " do not match.")
+    }
+  }
+}
+
+check_df_dims(list_of_dfs = new_df_list, approved_concepts = approved_concepts)
+
