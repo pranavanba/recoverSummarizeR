@@ -202,15 +202,6 @@ new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
 summary <- function(dataset) {
-  dataset_name <- deparse(substitute(dataset))
-  
-  if (grepl("\\$fitbit", dataset_name)) {
-    dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
-  } else if (grepl("\\$healthkitv2", dataset_name)) {
-    dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
-  } else {
-    dataset_name <- gsub("^.*\\$", "", dataset_name)
-  }
   
   all_pct5 <- 
     dataset %>%
