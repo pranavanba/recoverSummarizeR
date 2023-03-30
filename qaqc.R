@@ -1,4 +1,12 @@
-# Check overlap of concepts
+# Find common columns to merge on ---------------------------------------------------------------------------------
+
+# Common cols between fitbit sleep log files
+identical(
+  (df_list$fitbitsleeplogs$LogId %>% unique() %>% sort()), 
+  (df_list$fitbitsleeplogs_sleeplogdetails$LogId %>% unique() %>% sort())
+)
+
+# Check overlap of concepts ---------------------------------------------------------------------------------------
 
 approved_concepts <- tibble(name = "concept_map", value = str_extract(concept_map$concept_cd, "(?<=:)[^:]+$") %>% unique())
 approved_concepts$value %<>% 
@@ -18,6 +26,8 @@ tmp <- synBuildTable("concepts_overlap", "syn43435581", new_df_list_concepts)
 tmp <- synStore(tmp)
 
 rm(tmp)
+
+# Check wide to long format conversion ----------------------------------------------------------------------------
 
 # Check that columns in data frames are not found in "concepts" list (which would indicate that not all concepts from
 # original data sets were melted from wide to long format)
