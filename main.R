@@ -67,13 +67,12 @@ names(tmp) <-
   gsub("\\.(parquet|tsv|ndjson)$",
        "",
        paste(basename(dirname(file_paths)), "-", basename(file_paths)))
-
-# Exclude manifest and HK ecg parent files for now
-tmp <- tmp[!grepl("MANIFEST", names(tmp))]
-tmp <- tmp[!grepl("healthkitv2electrocardiogram - HealthKitV2Electrocardiogram", names(tmp))]
 names(tmp) <- sub("-.*\\.snappy", "", names(tmp))
 names(tmp) <- sub("dataset_", "", names(tmp))
 names(tmp) <- gsub(" ", "", names(tmp))
+
+# Include only fitbit datasets for now
+tmp <- tmp[grepl("fitbit", names(tmp))]
 
 # May need to update the following to accommodate multiple multi-part parquet
 # files; currently works with only one mutli-part file: fitbitintradaycombined
