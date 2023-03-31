@@ -580,29 +580,36 @@ summary <- function(dataset) {
       weekly_numrecords
     )
   
-  result %<>% 
-    mutate(StartDate = as_date(StartDate),
-           EndDate = as_date(EndDate)) %>% 
-    mutate(valtype_cd = class(value)) %>% 
-    mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-           tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
-    select(-value)
-  
-  result$concept %<>% 
-    tolower() %>% 
-    {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
-    {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
-    {gsub("hrv_d", "hrvd", .)} %>% 
-    {gsub("breath", "brth", .)} %>% 
-    {gsub("spo2_", "spo2", ., perl = T)} %>% 
-    {gsub("averageheartrate", "avghr", .)} %>% 
-    {gsub("minutes", "mins", .)}
-  
   return(result)
 }
 
 tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
 
+# 6. Update output to match concept map format
+
+tmpout_summarized$concept %<>% 
+  tolower() %>% 
+  {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
+  {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
+  {gsub("hrv_d", "hrvd", .)} %>% 
+  {gsub("breath", "brth", .)} %>% 
+  {gsub("spo2_", "spo2", ., perl = T)} %>% 
+  {gsub("averageheartrate", "avghr", .)} %>% 
+  {gsub("minutes", "mins", .)}
+
+tmpout_summarized %<>% 
+  mutate(StartDate = as_date(StartDate),
+         EndDate = as_date(EndDate)) %>% 
+  mutate(valtype_cd = class(value)) %>% 
+  mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+         tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
+  select(-value)
+
+tmpout_summarized %<>% 
+  left_join(select(concept_map, concept_cd, UNITS_CD), 
+            by = c("concept" = "concept_cd")) # Add units_cd column from concept map matching rows by concept strings
+
+colnames(tmpout_summarized) <- tolower(colnames(tmpout_summarized))
 
 # Write out output ------------------------------------------------------------------------------------------------
 
