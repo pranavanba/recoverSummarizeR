@@ -237,14 +237,20 @@ summary <- function(dataset) {
   
   all_pct5 <- 
     dataset %>%
-    select(ParticipantIdentifier, StartDate, EndDate, concept, value,) %>%
+    select(ParticipantIdentifier, 
+           StartDate = ifelse("StartDate" %in% names(.), "StartDate",
+                              ifelse("EndDate" %in% names(.), "EndDate", "Date")),
+           ifelse("EndDate" %in% names(.), "EndDate",
+                  ifelse("StartDate" %in% names(.), "StartDate", "concept")),
+           concept, 
+           value) %>%
     group_by(ParticipantIdentifier, concept) %>%
     mutate("quantile" = quantile(as.numeric(value), 0.05, na.rm = T)) %>%
     select(-c(value)) %>%
     rename(value = quantile) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "5pct",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -261,8 +267,8 @@ summary <- function(dataset) {
     select(-c(value)) %>%
     rename(value = quantile) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "95pct",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -279,8 +285,8 @@ summary <- function(dataset) {
     select(-c(value)) %>%
     rename(value = mean) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "mean",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -297,8 +303,8 @@ summary <- function(dataset) {
     select(-c(value)) %>%
     rename(value = median) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "median",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -315,8 +321,8 @@ summary <- function(dataset) {
     select(-c(value)) %>%
     rename(value = variance) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "variance",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -334,8 +340,8 @@ summary <- function(dataset) {
     select(-c(value)) %>%
     rename(value = n) %>%
     mutate(
-      StartDate = as_datetime(min(StartDate)),
-      EndDate = as_datetime(max(EndDate)),
+      StartDate = as_date(min(StartDate)),
+      EndDate = as_date(max(EndDate)),
       timescale = "alltime",
       stat = "numrecords",
       concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -348,14 +354,13 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
     filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
     group_by(ParticipantIdentifier, concept, year, week) %>%
-    summarise("value" = quantile(as.numeric(value), 0.05, na.rm = T),
-              .groups = "keep") %>%
+    summarise("value" = quantile(as.numeric(value), 0.05, na.rm = T), .groups = "keep") %>%
     ungroup() %>%
     mutate(
       week_summary_start_date =
@@ -385,14 +390,13 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
     filter(StartDate >= floor_date(min(StartDate), unit = "week", week_start = "Sunday")) %>%
     group_by(ParticipantIdentifier, concept, year, week) %>%
-    summarise("value" = quantile(as.numeric(value), 0.95, na.rm = T),
-              .groups = "keep") %>%
+    summarise("value" = quantile(as.numeric(value), 0.95, na.rm = T), .groups = "keep") %>%
     ungroup() %>%
     mutate(
       week_summary_start_date =
@@ -422,7 +426,7 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
@@ -458,7 +462,7 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
@@ -494,7 +498,7 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
@@ -530,7 +534,7 @@ summary <- function(dataset) {
     dataset %>%
     select(ParticipantIdentifier, concept, value, StartDate) %>%
     mutate(
-      StartDate = ymd_hms(StartDate),
+      StartDate = as_date(StartDate),
       year = year(StartDate),
       week = epiweek(StartDate)
     ) %>%
@@ -583,7 +587,7 @@ summary <- function(dataset) {
   return(result)
 }
 
-tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
+tmpout_summarized <- summary(filtered_df_list$fitbitactivitylogs)
 
 # 6. Update output to match concept map format
 
@@ -644,6 +648,4 @@ rm(tmp)
 tmp <- synBuildTable("concepts_map.csv", "syn43435581", concept_map)
 tmp <- synStore(tmp)
 rm(tmp)
-
-
 
