@@ -603,11 +603,10 @@ tmpout_summarized %<>%
   mutate(valtype_cd = class(value)) %>% 
   mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
          tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
-  select(-value)
-
-tmpout_summarized %<>% 
+  select(-value) %>% 
   left_join(select(concept_map, concept_cd, UNITS_CD), 
-            by = c("concept" = "concept_cd")) # Add units_cd column from concept map matching rows by concept strings
+            by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
+  drop_na(nval_num)
 
 colnames(tmpout_summarized) <- tolower(colnames(tmpout_summarized))
 
@@ -623,11 +622,11 @@ write.csv(tmpout_non_summarized, file = 'deliverables/non_summarized_concepts.cs
 write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
 
 # 2. Store data frames as tables in Synapse
-tmp <- synBuildTable("summarized_concepts.csv", "syn43435581", tmpout_summarized)
+tmp <- synBuildTable("summarized_concepts", "syn43435581", tmpout_summarized)
 tmp <- synStore(tmp)
 rm(tmp)
 
-tmp <- synBuildTable("concepts_map.csv", "syn43435581", concepts_map)
+tmp <- synBuildTable("concepts_map.csv", "syn43435581", concept_map)
 tmp <- synStore(tmp)
 rm(tmp)
 
