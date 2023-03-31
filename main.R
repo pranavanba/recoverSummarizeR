@@ -163,6 +163,21 @@ filtered_df_list <-
              if ("value" %in% colnames(x)) "value")
     })
 
+# # Convert "value" column to numeric
+# convert_column_to_numeric <- function(x) {
+#   if (grepl("devices", deparse(substitute(x)))) {
+#     return(x)
+#     } else {
+#       if ("value" %in% names(x)) {
+#         x$value <- as.numeric(x$value)
+#         }
+#       return(x)
+#     }
+#   }
+# 
+# filtered_df_list <- lapply(filtered_df_list, convert_column_to_numeric)
+
+
 # 3. Format non-summarized data as per i2b2 specs
 
 # new_df_list$enrolledparticipants %<>% 
