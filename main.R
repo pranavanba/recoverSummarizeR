@@ -588,6 +588,16 @@ summary <- function(dataset) {
            tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
     select(-value)
   
+  result$concept %<>% 
+    tolower() %>% 
+    {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
+    {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
+    {gsub("hrv_d", "hrvd", .)} %>% 
+    {gsub("breath", "brth", .)} %>% 
+    {gsub("spo2_", "spo2", ., perl = T)} %>% 
+    {gsub("averageheartrate", "avghr", .)} %>% 
+    {gsub("minutes", "mins", .)}
+  
   return(result)
 }
 
