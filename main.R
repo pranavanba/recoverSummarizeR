@@ -576,6 +576,13 @@ summary <- function(dataset) {
       weekly_variance,
       weekly_numrecords
     )
+  
+  result %<>% 
+    mutate(valtype_cd = class(value)) %>% 
+    mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+           tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
+    select(-value)
+  
   return(result)
 }
 
