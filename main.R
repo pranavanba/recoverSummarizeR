@@ -113,7 +113,7 @@ all_cols$name %<>% {
 
 approved_concepts <- 
   concept_map$concept_cd %>%
-  grep("^(?!.*Trigger).+$", ., perl = T, value = T) %>% 
+  grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
   str_extract("(?<=:)[^:]*$") %>% unique()
 
 approved_concepts %<>% 
@@ -623,6 +623,8 @@ non_summarized_output_filtered <-
   filter(concept %in% concept_map$concept_cd)
 
 output_concepts <- bind_rows(summarized_output, non_summarized_output_filtered)
+
+output_concepts[is.na(output_concepts)] <- ""
 
 # Write out output ------------------------------------------------------------------------------------------------
 
