@@ -42,6 +42,9 @@ concept_map <-
     "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
   )
 1
+
+concept_map$concept_cd %<>% tolower()
+
 break
 
 # Read parquet files to df ------------------------------------------------
@@ -114,13 +117,13 @@ approved_concepts <-
   str_extract("(?<=:)[^:]*$") %>% unique()
 
 approved_concepts %<>% 
-  {gsub("Mins", "Minutes", .)} %>% 
-  {gsub("AvgHR", "AverageHeartRate", .)} %>% 
-  {gsub("SpO2(?!_)", "SpO2_", ., perl = T)} %>% 
-  {gsub("Brth", "Breath", .)} %>% 
-  {gsub("HrvD", "Hrv_D", .)} %>% 
-  {gsub("RestingHR$", "RestingHeartRate", ., perl = T)} %>% 
-  {gsub("SleepBreath", "SleepSummaryBreath", .)} %>% 
+  {gsub("mins", "minutes", .)} %>% 
+  {gsub("avghr", "averageheartrate", .)} %>% 
+  {gsub("spo2(?!_)", "spo2_", ., perl = T)} %>% 
+  {gsub("brth", "breath", .)} %>% 
+  {gsub("hrvd", "hrv_d", .)} %>% 
+  {gsub("restinghr$", "restingheartrate", ., perl = T)} %>% 
+  {gsub("sleepbreath", "sleepsummarybreath", .)} %>% 
   unique()
 
 excluded_concepts <- all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts))] %>% unique()
