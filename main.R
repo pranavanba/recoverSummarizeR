@@ -177,6 +177,11 @@ filtered_df_list <-
 # 
 # filtered_df_list <- lapply(filtered_df_list, convert_column_to_numeric)
 
+filtered_df_list$fitbitactivitylogs$value %<>% as.numeric()
+filtered_df_list$fitbitdailydata$value %<>% as.numeric()
+filtered_df_list$fitbitrestingheartrates$value %<>% as.numeric()
+filtered_df_list$fitbitsleeplogs$value %<>% as.numeric()
+filtered_df_list$fitbitintradaycombined$value %<>% as.numeric()
 
 # 3. Format non-summarized data as per i2b2 specs
 
