@@ -578,6 +578,8 @@ summary <- function(dataset) {
     )
   
   result %<>% 
+    mutate(StartDate = as_date(StartDate),
+           EndDate = as_date(EndDate)) %>% 
     mutate(valtype_cd = class(value)) %>% 
     mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
            tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
@@ -588,7 +590,10 @@ summary <- function(dataset) {
 
 tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
 
-# 5. Output data frames as CSVs to 'deliverables' folder
+
+# Write out output ------------------------------------------------------------------------------------------------
+
+# 1. Output data frames as CSVs to 'deliverables' folder
 
 out_dir <- "deliverables"
 dir.create(out_dir)
@@ -596,4 +601,15 @@ dir.create(out_dir)
 write.csv(tmpout_summarized, file = 'deliverables/summarized_concepts.csv', row.names = F)
 write.csv(tmpout_non_summarized, file = 'deliverables/non_summarized_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
+
+# 2. Store data frames as tables in Synapse
+tmp <- synBuildTable("summarized_concepts.csv", "syn43435581", tmpout_summarized)
+tmp <- synStore(tmp)
+rm(tmp)
+
+tmp <- synBuildTable("concepts_map.csv", "syn43435581", concepts_map)
+tmp <- synStore(tmp)
+rm(tmp)
+
+
 
