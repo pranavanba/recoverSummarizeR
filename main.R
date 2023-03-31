@@ -154,6 +154,15 @@ new_df_list <- lapply(df_list, melt_df)
 
 new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
 
+filtered_df_list <- 
+  lapply(new_df_list, function(x) {
+    x %>% 
+      select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
+             matches("(?<!_)date(?!_)", perl = T),
+             if ("concept" %in% colnames(x)) "concept",
+             if ("value" %in% colnames(x)) "value")
+    })
+
 # 3. Format non-summarized data as per i2b2 specs
 
 # new_df_list$enrolledparticipants %<>% 
