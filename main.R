@@ -188,46 +188,46 @@ filtered_df_list$fitbitintradaycombined$value %<>% as.numeric()
 
 # 3. Format non-summarized data as per i2b2 specs
 
-# new_df_list$enrolledparticipants %<>% 
+# new_df_list$enrolledparticipants %<>%
 #   mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
 
-# add_i2b2_prefix <- function(dataset) {
-#   dataset_name <- deparse(substitute(dataset))
-#   
-#   if (grepl("\\$fitbit", dataset_name)) {
-#     dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
-#   } else if (grepl("\\$healthkitv2", dataset_name)) {
-#     dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
-#   } else if (grepl("symptomlog$", dataset_name)) {
-#     dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
-#   } else if (grepl("symptomlog_value_s", dataset_name)) {
-#     dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
-#   } else if (grepl("symptomlog_value_t", dataset_name)) {
-#     dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
-#   } else {
-#     dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
-#   }
-# 
-#   if ("concept" %in% colnames(dataset)) {
-#     result <- 
-#       dataset %>% 
-#       mutate(concept = paste0("mhp:", dataset_name, ":", concept))
-#     } else {
-#       result <- dataset
-#     }
-#   
-#   return(result)
-# }
+add_i2b2_prefix <- function(dataset) {
+  dataset_name <- deparse(substitute(dataset))
 
-# tmpout_non_summarized <- 
-#   add_i2b2_prefix(new_df_list$fitbitactivitylogs) %>% 
-#   select(ParticipantIdentifier, matches("(?<!_)date(?!_)", perl = T), concept, value)
+  if (grepl("\\$fitbit", dataset_name)) {
+    dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
+  } else if (grepl("\\$healthkitv2", dataset_name)) {
+    dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
+  } else if (grepl("symptomlog$", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
+  } else if (grepl("symptomlog_value_s", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
+  } else if (grepl("symptomlog_value_t", dataset_name)) {
+    dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
+  } else {
+    dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
+  }
 
-# tmpout_non_summarized <- 
-#   lapply(new_df_list, add_i2b2_prefix) %>% 
-#   select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier", 
-#          matches("(?<!_)date(?!_)", perl = T), 
-#          if ("concept" %in% colnames(x)) "concept", 
+  if ("concept" %in% colnames(dataset)) {
+    result <-
+      dataset %>%
+      mutate(concept = paste0("mhp:", dataset_name, ":", concept))
+    } else {
+      result <- dataset
+    }
+
+  return(result)
+}
+
+tmpout_non_summarized <-
+  add_i2b2_prefix(filtered_df_list$fitbitactivitylogs) %>%
+  select(ParticipantIdentifier, matches("(?<!_)date(?!_)", perl = T), concept, value)
+
+# tmpout_non_summarized <-
+#   lapply(filtered_df_list, add_i2b2_prefix) %>%
+#   select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
+#          matches("(?<!_)date(?!_)", perl = T),
+#          if ("concept" %in% colnames(x)) "concept",
 #          if ("value" %in% colnames(x)) "value")
 
 
@@ -587,28 +587,42 @@ tmpout_summarized <- summary(new_df_list$fitbitactivitylogs)
 
 # 6. Update output to match concept map format
 
-tmpout_summarized$concept %<>% 
-  tolower() %>% 
-  {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
-  {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
-  {gsub("hrv_d", "hrvd", .)} %>% 
-  {gsub("breath", "brth", .)} %>% 
-  {gsub("spo2_", "spo2", ., perl = T)} %>% 
-  {gsub("averageheartrate", "avghr", .)} %>% 
-  {gsub("minutes", "mins", .)}
+process_df <- function(df) {
+  
+  df$concept %<>% 
+    tolower() %>% 
+    {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
+    {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
+    {gsub("hrv_d", "hrvd", .)} %>% 
+    {gsub("breath", "brth", .)} %>% 
+    {gsub("spo2_", "spo2", ., perl = T)} %>% 
+    {gsub("averageheartrate", "avghr", .)} %>% 
+    {gsub("minutes", "mins", .)}
+  
+  df %<>%
+    mutate(StartDate = as_date(StartDate),
+           EndDate = as_date(EndDate)) %>%
+    mutate(valtype_cd = class(value)) %>%
+    mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+           tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+    select(-value) %>%
+    left_join(select(concept_map, concept_cd, UNITS_CD),
+              by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
+    drop_na(nval_num)
 
-tmpout_summarized %<>% 
-  mutate(StartDate = as_date(StartDate),
-         EndDate = as_date(EndDate)) %>% 
-  mutate(valtype_cd = class(value)) %>% 
-  mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-         tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>% 
-  select(-value) %>% 
-  left_join(select(concept_map, concept_cd, UNITS_CD), 
-            by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
-  drop_na(nval_num)
+  colnames(df) <- tolower(colnames(df))
 
-colnames(tmpout_summarized) <- tolower(colnames(tmpout_summarized))
+  return(df)
+}
+
+summarized_output <- process_df(tmpout_summarized)
+non_summarized_output <- process_df(tmpout_non_summarized)
+
+non_summarized_output_filtered <- 
+  non_summarized_output %>% 
+  filter(concept %in% concept_map$concept_cd)
+
+output_concepts <- bind_rows(summarized_output, non_summarized_output_filtered)
 
 # Write out output ------------------------------------------------------------------------------------------------
 
@@ -617,12 +631,11 @@ colnames(tmpout_summarized) <- tolower(colnames(tmpout_summarized))
 out_dir <- "deliverables"
 dir.create(out_dir)
 
-write.csv(tmpout_summarized, file = 'deliverables/summarized_concepts.csv', row.names = F)
-write.csv(tmpout_non_summarized, file = 'deliverables/non_summarized_concepts.csv', row.names = F)
+write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
 
 # 2. Store data frames as tables in Synapse
-tmp <- synBuildTable("summarized_concepts", "syn43435581", tmpout_summarized)
+tmp <- synBuildTable("output_concepts", "syn43435581", output_concepts)
 tmp <- synStore(tmp)
 rm(tmp)
 
