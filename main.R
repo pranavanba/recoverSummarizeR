@@ -170,6 +170,7 @@ melt_df <- function(df, excluded_concepts) {
 # Apply the melt_df function to the list of data frames
 new_df_list_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_summarized))
 new_df_list_non_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_non_summarized))
+rm(df_list)
 
 new_factors_summarized <- lapply(new_df_list_summarized, function(x) x[["concept"]] %>% unique())
 new_factors_non_summarized <- lapply(new_df_list_non_summarized, function(x) x[["concept"]] %>% unique())
@@ -1342,8 +1343,11 @@ summary <- function(dataset) {
 
 # Filter the list to only include data frames with "concept" column and apply the function on the filtered list
 tmp <- Filter(function(df) "concept" %in% colnames(df), filtered_df_list_summarized)
-output_summarized_list <- 
-  lapply(tmp, summary)
+output_summarized_list <- lapply(tmp, summary)
+rm(tmp)
+
+tmpout_summarized <- bind_rows(output_summarized_list)
+rm(output_summarized_list)
 
 # 5. Update output to match concept map format
 
