@@ -111,12 +111,12 @@ all_cols$name %<>% {
   gsub("\\s\\d+|\\d", "", .)
 }
 
-approved_concepts <- 
+approved_concepts_non_summarized <- 
   concept_map$concept_cd %>%
-  grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
+  grep("^(?!.*(?:summary|trigger)).+$", ., perl = T, value = T) %>% 
   str_extract("(?<=:)[^:]*$") %>% unique()
 
-approved_concepts %<>% 
+approved_concepts_non_summarized %<>% 
   {gsub("mins", "minutes", .)} %>% 
   {gsub("avghr", "averageheartrate", .)} %>% 
   {gsub("spo2(?!_)", "spo2_", ., perl = T)} %>% 
@@ -126,22 +126,39 @@ approved_concepts %<>%
   {gsub("sleepbreath", "sleepsummarybreath", .)} %>% 
   unique()
 
-excluded_concepts <- all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts))] %>% unique()
+approved_concepts_summarized <- 
+  concept_map$concept_cd %>%
+  grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
+  str_extract("(?<=:)[^:]*$") %>% unique()
 
-# excluded_concepts <- all_cols$value[all_cols$value %>% duplicated() %>% which()] %>%
-#   append(all_cols$value[grepl("date|modified", (all_cols$value %>% tolower()))]) %>%
-#   unique()
+approved_concepts_summarized %<>% 
+  {gsub("mins", "minutes", .)} %>% 
+  {gsub("avghr", "averageheartrate", .)} %>% 
+  {gsub("spo2(?!_)", "spo2_", ., perl = T)} %>% 
+  {gsub("brth", "breath", .)} %>% 
+  {gsub("hrvd", "hrv_d", .)} %>% 
+  {gsub("restinghr$", "restingheartrate", ., perl = T)} %>% 
+  {gsub("sleepbreath", "sleepsummarybreath", .)} %>% 
+  unique()
 
-# excluded_concepts <- excluded_concepts[-grep("heartrate|calories|steps|duration|dateofbirth", (excluded_concepts %>% tolower()))]
+excluded_concepts_summarized <- 
+  all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_summarized))] %>% 
+  unique()
 
-excluded_concepts <- excluded_concepts[!(tolower(excluded_concepts) %in% tolower(approved_concepts))]
+excluded_concepts_non_summarized <- 
+  all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_non_summarized))] %>% 
+  unique()
 
-# rm(excluded_concepts)
+excluded_concepts_summarized <- 
+  excluded_concepts_summarized[!(tolower(excluded_concepts_summarized) %in% tolower(approved_concepts_summarized))]
+
+excluded_concepts_non_summarized <- 
+  excluded_concepts_non_summarized[!(tolower(excluded_concepts_non_summarized) %in% tolower(approved_concepts_non_summarized))]
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) cols (we know which cols are approved or excluded based on lists of concepts created in previous step)
 
 # Define a function to melt a data frame
-melt_df <- function(df) {
+melt_df <- function(df, excluded_concepts) {
   # Get indices of approved concept columns
   approved_cols <- setdiff(names(df), excluded_concepts)
   
@@ -153,18 +170,29 @@ melt_df <- function(df) {
 }
 
 # Apply the melt_df function to the list of data frames
-new_df_list <- lapply(df_list, melt_df)
+new_df_list_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_summarized))
+new_df_list_non_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_non_summarized))
 
-new_factors <- lapply(new_df_list, function(x) x[["concept"]] %>% unique())
+new_factors_summarized <- lapply(new_df_list_summarized, function(x) x[["concept"]] %>% unique())
+new_factors_non_summarized <- lapply(new_df_list_non_summarized, function(x) x[["concept"]] %>% unique())
 
-filtered_df_list <- 
-  lapply(new_df_list, function(x) {
+filtered_df_list_summarized <- 
+  lapply(new_df_list_summarized, function(x) {
     x %>% 
       select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
              matches("(?<!_)date(?!_)", perl = T),
              if ("concept" %in% colnames(x)) "concept",
              if ("value" %in% colnames(x)) "value")
     })
+
+filtered_df_list_non_summarized <- 
+  lapply(new_df_list_non_summarized, function(x) {
+    x %>% 
+      select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
+             matches("(?<!_)date(?!_)", perl = T),
+             if ("concept" %in% colnames(x)) "concept",
+             if ("value" %in% colnames(x)) "value")
+  })
 
 # # Convert "value" column to numeric
 # convert_column_to_numeric <- function(x) {
@@ -180,16 +208,18 @@ filtered_df_list <-
 # 
 # filtered_df_list <- lapply(filtered_df_list, convert_column_to_numeric)
 
-filtered_df_list$fitbitactivitylogs$value %<>% as.numeric()
-filtered_df_list$fitbitdailydata$value %<>% as.numeric()
-filtered_df_list$fitbitrestingheartrates$value %<>% as.numeric()
-filtered_df_list$fitbitsleeplogs$value %<>% as.numeric()
-filtered_df_list$fitbitintradaycombined$value %<>% as.numeric()
+filtered_df_list_summarized$fitbitactivitylogs$value %<>% as.numeric()
+filtered_df_list_summarized$fitbitdailydata$value %<>% as.numeric()
+filtered_df_list_summarized$fitbitrestingheartrates$value %<>% as.numeric()
+filtered_df_list_summarized$fitbitsleeplogs$value %<>% as.numeric()
+filtered_df_list_summarized$fitbitintradaycombined$value %<>% as.numeric()
+
+filtered_df_list_non_summarized$fitbitactivitylogs$value %<>% as.numeric()
+filtered_df_list_non_summarized$fitbitdailydata$value %<>% as.numeric()
+filtered_df_list_non_summarized$fitbitrestingheartrates$value %<>% as.numeric()
+filtered_df_list_non_summarized$fitbitsleeplogs$value %<>% as.numeric()
 
 # 3. Format non-summarized data as per i2b2 specs
-
-# new_df_list$enrolledparticipants %<>%
-#   mutate(concept = paste0("mhp:survey:enrolledparticipants:", concept))
 
 add_i2b2_prefix <- function(dataset) {
   dataset_name <- deparse(substitute(dataset))
@@ -219,12 +249,57 @@ add_i2b2_prefix <- function(dataset) {
   return(result)
 }
 
-tmpout_non_summarized <-
-  add_i2b2_prefix(filtered_df_list$fitbitactivitylogs) %>%
-  select(ParticipantIdentifier, matches("(?<!_)date(?!_)", perl = T), concept, value)
+tmp1 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitactivitylogs) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp2 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitdailydata) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp3 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitdevices) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp4 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitrestingheartrates) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp5 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitsleeplogs_sleeplogdetails) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp6 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitsleeplogs) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+tmp7 <-
+  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitintradaycombined) %>%
+  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
+         matches("(?<!_)date(?!_)", perl = T),
+         if ("concept" %in% colnames(.)) "concept",
+         if ("value" %in% colnames(.)) "value")
+
+tmpout_non_summarized <- list(tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7)
+
+rm(tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7)
+
+names(tmpout_non_summarized) <- names(filtered_df_list_non_summarized)
 
 # tmpout_non_summarized <-
-#   lapply(filtered_df_list, add_i2b2_prefix) %>%
+#   lapply(filtered_df_list_non_summarized, add_i2b2_prefix) %>%
 #   select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
 #          matches("(?<!_)date(?!_)", perl = T),
 #          if ("concept" %in% colnames(x)) "concept",
@@ -587,9 +662,9 @@ summary <- function(dataset) {
   return(result)
 }
 
-tmpout_summarized <- summary(filtered_df_list$fitbitactivitylogs)
+tmpout_summarized <- summary(filtered_df_list_summarized$fitbitactivitylogs)
 
-# 6. Update output to match concept map format
+# 5. Update output to match concept map format
 
 process_df <- function(df) {
   
