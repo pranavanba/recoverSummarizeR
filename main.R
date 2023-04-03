@@ -26,14 +26,29 @@ library(synapser)
 
 synLogin()
 
-dir.create("raw-data")
-setwd("raw-data/")
-dir.create("parquet-datasets")
-setwd("parquet-datasets/")
-system("synapse get -r syn50996868")
-setwd("..")
-setwd("..")
-
+if (dir.exists("raw-data")) {
+  setwd("raw-data/")
+  if (dir.exists("parquet-datasets")) {
+    setwd("parquet-datasets/")
+    system("synapse get -r syn50996868")
+    setwd("..")
+    setwd("..")
+  } else {
+    dir.create("parquet-datasets")
+    setwd("parquet-datasets/")
+    system("synapse get -r syn50996868")
+    setwd("..")
+    setwd("..")
+  }
+} else {
+  dir.create("raw-data")
+  setwd("raw-data/")
+  dir.create("parquet-datasets")
+  setwd("parquet-datasets/")
+  system("synapse get -r syn50996868")
+  setwd("..")
+  setwd("..")
+}
 
 # Get i2b2 concepts map ---------------------------------------------------
 
@@ -44,8 +59,6 @@ concept_map <-
 1
 
 concept_map$concept_cd %<>% tolower()
-
-# break
 
 # Read parquet files to df ------------------------------------------------
 
