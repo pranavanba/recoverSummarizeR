@@ -1439,23 +1439,3 @@ output_concepts[is.na(output_concepts)] <- ""
 
 rm(summarized_output, non_summarized_output, non_summarized_output_filtered)
 
-# Write out output ------------------------------------------------------------------------------------------------
-
-# 1. Output data frames as CSVs to 'deliverables' folder
-
-out_dir <- "deliverables"
-dir.create(out_dir)
-
-write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
-write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
-
-# 2. Store data frames as tables in Synapse
-# tmp <- synBuildTable("output_concepts", "syn43435581", output_concepts)
-# tmp <- synStore(tmp)
-# rm(tmp)
-synStore(Table("syn51277492", output_concepts))
-
-# tmp <- synBuildTable("concepts_map.csv", "syn43435581", concept_map)
-# tmp <- synStore(tmp)
-# rm(tmp)
-synStore(Table("syn51223795", concept_map))
