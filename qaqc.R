@@ -24,7 +24,6 @@ new_df_list_concepts$value[new_df_list_concepts$name == "enrolledparticipants"] 
 
 tmp <- synBuildTable("concepts_overlap", "syn43435581", new_df_list_concepts)
 tmp <- synStore(tmp)
-
 rm(tmp)
 
 # Check wide to long format conversion ----------------------------------------------------------------------------
@@ -67,4 +66,18 @@ check_df_dims <- function(list_of_dfs, approved_concepts) {
 }
 
 check_df_dims(list_of_dfs = new_df_list, approved_concepts = approved_concepts)
+
+
+# Check that concept codes are under 51 characters ----------------------------------------------------------------
+
+if ((output_concepts$concept %>% nchar() %>% max()) > 50) {
+  message("Some concept codes are longer than 50 characters in length")
+}
+
+
+# Check for empty value rows --------------------------------------------------------------------------------------
+
+if (any(is.na(output_concepts$valtype_cd) | output_concepts$valtype_cd == "")) {
+  message("There are values in the output file that are blank, i.e., there are concepts with NA or an empty string as the value")
+}
 
