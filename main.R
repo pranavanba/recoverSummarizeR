@@ -1380,15 +1380,23 @@ rm(output_non_summarized_list)
 
 process_df <- function(df) {
   
-  df$concept %<>% 
-    tolower() %>% 
-    {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
-    {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
-    {gsub("hrv_d", "hrvd", .)} %>% 
-    {gsub("breath", "brth", .)} %>% 
-    {gsub("spo2_", "spo2", ., perl = T)} %>% 
-    {gsub("averageheartrate", "avghr", .)} %>% 
-    {gsub("minutes", "mins", .)}
+  if (any(grepl("summary", df$concept))) {
+    df$concept %<>% 
+      tolower() %>% 
+      {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
+      {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
+      {gsub("hrv_d", "hrvd", .)} %>% 
+      {gsub("breath", "brth", .)} %>% 
+      {gsub("spo2_", "spo2", ., perl = T)} %>% 
+      {gsub("averageheartrate", "avghr", .)} %>% 
+      {gsub("minutes", "mins", .)}
+  } else if (any(grepl("mhp:fitbit", df$concept))) {
+    df$concept %<>% 
+      tolower() %>% 
+      {gsub("hrv_d", "hrvd", .)} %>% 
+      {gsub("spo2_", "spo2", ., perl = T)} %>% 
+      {gsub("minutes", "mins", .)}
+  }
   
   if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
     df %<>% 
@@ -1422,11 +1430,13 @@ non_summarized_output_filtered <-
   non_summarized_output %>% 
   filter(concept %in% concept_map$concept_cd)
 
-output_concepts <- bind_rows(summarized_output, non_summarized_output_filtered)
+output_concepts <- 
+  bind_rows(summarized_output, non_summarized_output_filtered) %>% 
+  arrange(concept)
 
 output_concepts$enddate %<>% as.character()
-
 output_concepts$enddate[is.na(output_concepts$enddate)] <- ""
+
 
 rm(summarized_output, non_summarized_output, non_summarized_output_filtered)
 
@@ -1441,11 +1451,12 @@ write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names 
 write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
 
 # 2. Store data frames as tables in Synapse
-tmp <- synBuildTable("output_concepts", "syn43435581", output_concepts)
-tmp <- synStore(tmp)
-rm(tmp)
+# tmp <- synBuildTable("output_concepts", "syn43435581", output_concepts)
+# tmp <- synStore(tmp)
+# rm(tmp)
+synStore(Table("syn51277492", output_concepts))
 
-tmp <- synBuildTable("concepts_map.csv", "syn43435581", concept_map)
-tmp <- synStore(tmp)
-rm(tmp)
-
+# tmp <- synBuildTable("concepts_map.csv", "syn43435581", concept_map)
+# tmp <- synStore(tmp)
+# rm(tmp)
+synStore(Table("syn51223795", concept_map))
