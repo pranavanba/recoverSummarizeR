@@ -1424,7 +1424,9 @@ non_summarized_output_filtered <-
 
 output_concepts <- bind_rows(summarized_output, non_summarized_output_filtered)
 
-output_concepts[is.na(output_concepts)] <- ""
+output_concepts$enddate %<>% as.character()
+
+output_concepts$enddate[is.na(output_concepts$enddate)] <- ""
 
 rm(summarized_output, non_summarized_output, non_summarized_output_filtered)
 
