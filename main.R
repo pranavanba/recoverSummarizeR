@@ -1390,16 +1390,25 @@ process_df <- function(df) {
     {gsub("averageheartrate", "avghr", .)} %>% 
     {gsub("minutes", "mins", .)}
   
-  df %<>%
-    mutate(StartDate = as_date(StartDate),
-           EndDate = as_date(EndDate)) %>%
-    mutate(valtype_cd = class(value)) %>%
-    mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-           tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
-    select(-value) %>%
-    left_join(select(concept_map, concept_cd, UNITS_CD),
-              by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
-    drop_na(nval_num)
+  if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
+    df %<>% 
+      mutate(StartDate = as_date(StartDate),
+             EndDate = as_date(EndDate)) %>%
+      left_join(select(concept_map, concept_cd, UNITS_CD),
+                by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
+      drop_na(valtype_cd)
+  } else {
+    df %<>%
+      mutate(StartDate = as_date(StartDate),
+             EndDate = as_date(EndDate)) %>%
+      mutate(valtype_cd = class(value)) %>%
+      mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+             tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+      select(-value) %>%
+      left_join(select(concept_map, concept_cd, UNITS_CD),
+                by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
+      drop_na(valtype_cd)
+  }
 
   colnames(df) <- tolower(colnames(df))
 
@@ -1416,6 +1425,8 @@ non_summarized_output_filtered <-
 output_concepts <- bind_rows(summarized_output, non_summarized_output_filtered)
 
 output_concepts[is.na(output_concepts)] <- ""
+
+rm(summarized_output, non_summarized_output, non_summarized_output_filtered)
 
 # Write out output ------------------------------------------------------------------------------------------------
 
