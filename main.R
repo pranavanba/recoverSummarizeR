@@ -285,10 +285,11 @@ non_summarized_tmp <-
 source("summary_function.R")
 
 # Filter the list to only include data frames with "concept" column and apply the summary function on the filtered list
-tmp <- Filter(function(df) "concept" %in% colnames(df), filtered_df_list_summarized)
-tmp <- lapply(tmp, summary)
-summarized_tmp <- bind_rows(tmp)
-rm(tmp)
+summarized_tmp <- 
+  filtered_df_list_summarized %>% 
+  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
+  lapply(summary) %>% 
+  bind_rows()
 
 # 5. Update output to match concept map format
 
