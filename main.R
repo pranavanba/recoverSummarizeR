@@ -219,81 +219,34 @@ filtered_df_list_summarized %<>% {convert_col_to_numeric(.)}
 # 3. Format non-summarized data as per i2b2 specs
 
 add_i2b2_prefix <- function(dataset) {
-  dataset_name <- deparse(substitute(dataset))
+  dataset_name <- names(dataset)
+  result <- list()
 
-  if (grepl("\\$fitbit", dataset_name)) {
-    dataset_name <- sub("^.*\\$fitbit", "fitbit:", dataset_name)
-  } else if (grepl("\\$healthkitv2", dataset_name)) {
-    dataset_name <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name)
-  } else if (grepl("symptomlog$", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog", "symptomlog", dataset_name)
-  } else if (grepl("symptomlog_value_s", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name)
-  } else if (grepl("symptomlog_value_t", dataset_name)) {
-    dataset_name <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name)
-  } else {
-    dataset_name <- gsub("^.*\\$", "survey:", dataset_name)
-  }
-
-  if ("concept" %in% colnames(dataset)) {
-    result <-
-      dataset %>%
-      mutate(concept = paste0("mhp:", dataset_name, ":", concept))
+  for (i in seq_along(dataset)) {
+    if (grepl("\\$fitbit", dataset_name[i])) {
+      dataset_name[i] <- sub("^.*\\$fitbit", "fitbit:", dataset_name[i])
+    } else if (grepl("\\$healthkitv2", dataset_name[i])) {
+      dataset_name[i] <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name[i])
+    } else if (grepl("symptomlog$", dataset_name[i])) {
+      dataset_name[i] <- sub("^.*\\$symptomlog", "symptomlog", dataset_name[i])
+    } else if (grepl("symptomlog_value_s", dataset_name[i])) {
+      dataset_name[i] <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name[i])
+    } else if (grepl("symptomlog_value_t", dataset_name[i])) {
+      dataset_name[i] <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name[i])
     } else {
-      result <- dataset
+      dataset_name[i] <- gsub("^.*\\$", "survey:", dataset_name[i])
     }
-
+    
+    result[[i]] <-
+      dataset[[i]] %>%
+      mutate(concept = paste0("mhp:", dataset_name[i], ":", concept))
+  }
+  
+  names(result) <- names(dataset)
   return(result)
 }
 
-tmp1 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitactivitylogs) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp2 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitdailydata) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp3 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitdevices) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp4 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitrestingheartrates) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp5 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitsleeplogs_sleeplogdetails) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp6 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitsleeplogs) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-tmp7 <-
-  add_i2b2_prefix(filtered_df_list_non_summarized$fitbitintradaycombined) %>%
-  select(if ("ParticipantIdentifier" %in% colnames(.)) "ParticipantIdentifier",
-         matches("(?<!_)date(?!_)", perl = T),
-         if ("concept" %in% colnames(.)) "concept",
-         if ("value" %in% colnames(.)) "value")
-
-tmpout_non_summarized <- list(tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7)
-
-rm(tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7)
-
-names(tmpout_non_summarized) <- names(filtered_df_list_non_summarized)
+tmpout_non_summarized <- add_i2b2_prefix(filtered_df_list_non_summarized)
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
