@@ -60,7 +60,7 @@ get_concepts <- function(url, token_refresh) {
 }
 
 concepts_url <- "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
-concepts_map <- get_concepts(concepts_url, token_refresh = 1)
+concept_map <- get_concepts(concepts_url, token_refresh = 1)
 rm(concepts_url)
 
 # Read parquet files to df ------------------------------------------------
@@ -104,7 +104,6 @@ combine_duplicate_dfs <- function(df_list) {
       names(df_list)[length(df_list)] <- df_name
     }
   }
-  
   return(df_list)
 }
 
@@ -116,57 +115,51 @@ rm(parent_directory, file_paths, tmp)
 
 # 1. Store approved and excluded concepts columns
 
-all_cols <- lapply(df_list, names) %>%
+all_cols <- df_list %>%
+  lapply(names) %>%
   unlist() %>%
-  enframe()
-
-all_cols$name %<>% {
-  gsub("\\s\\d+|\\d", "", .)
-}
+  enframe() %>%
+  mutate(name = gsub("\\s\\d+|\\d", "", name))
 
 approved_concepts_non_summarized <- 
   concept_map$concept_cd %>%
   grep("^(?!.*(?:summary|trigger)).+$", ., perl = T, value = T) %>% 
-  str_extract("(?<=:)[^:]*$") %>% unique()
-
-approved_concepts_non_summarized %<>% 
-  {gsub("mins", "minutes", .)} %>% 
-  {gsub("avghr", "averageheartrate", .)} %>% 
-  {gsub("spo2(?!_)", "spo2_", ., perl = T)} %>% 
-  {gsub("brth", "breath", .)} %>% 
-  {gsub("hrvd", "hrv_d", .)} %>% 
-  {gsub("restinghr$", "restingheartrate", ., perl = T)} %>% 
-  {gsub("sleepbreath", "sleepsummarybreath", .)} %>% 
+  str_extract("(?<=:)[^:]*$") %>% 
+  str_replace_all(c("mins" = "minutes",
+                    "avghr" = "averageheartrate",
+                    "spo2(?!_)" = "spo2_",
+                    "brth" = "breath",
+                    "hrvd" = "hrv_d",
+                    "restinghr$" = "restingheartrate",
+                    "sleepbreath" = "sleepsummarybreath")) %>% 
   unique()
 
 approved_concepts_summarized <- 
   concept_map$concept_cd %>%
   grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
-  str_extract("(?<=:)[^:]*$") %>% unique()
-
-approved_concepts_summarized %<>% 
-  {gsub("mins", "minutes", .)} %>% 
-  {gsub("avghr", "averageheartrate", .)} %>% 
-  {gsub("spo2(?!_)", "spo2_", ., perl = T)} %>% 
-  {gsub("brth", "breath", .)} %>% 
-  {gsub("hrvd", "hrv_d", .)} %>% 
-  {gsub("restinghr$", "restingheartrate", ., perl = T)} %>% 
-  {gsub("sleepbreath", "sleepsummarybreath", .)} %>% 
+  str_extract("(?<=:)[^:]*$") %>% 
+  str_replace_all(c("mins" = "minutes",
+                    "avghr" = "averageheartrate",
+                    "spo2(?!_)" = "spo2_",
+                    "brth" = "breath",
+                    "hrvd" = "hrv_d",
+                    "restinghr$" = "restingheartrate",
+                    "sleepbreath" = "sleepsummarybreath")) %>% 
   unique()
 
 excluded_concepts_summarized <- 
-  all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_summarized))] %>% 
-  unique()
-
-excluded_concepts_summarized <- 
-  excluded_concepts_summarized[!(tolower(excluded_concepts_summarized) %in% tolower(approved_concepts_summarized))]
-
-excluded_concepts_non_summarized <- 
-  all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_non_summarized))] %>% 
+  all_cols$value %>% 
+  tolower() %>% 
+  unique() %>% 
+  setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
 
 excluded_concepts_non_summarized <- 
-  excluded_concepts_non_summarized[!(tolower(excluded_concepts_non_summarized) %in% tolower(approved_concepts_non_summarized))]
+  all_cols$value %>% 
+  tolower() %>% 
+  unique() %>% 
+  setdiff(tolower(approved_concepts_non_summarized)) %>% 
+  unique()
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) cols (we know which cols are approved or excluded based on lists of concepts created in previous step)
 
