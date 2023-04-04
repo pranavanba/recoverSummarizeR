@@ -35,6 +35,9 @@ if ((T %in% lapply(lapply(new_df_list, function(x) names(x) %in% concepts), func
   break
 }
 
+new_factors_summarized <- lapply(new_df_list_summarized, function(x) x[["concept"]] %>% unique())
+new_factors_non_summarized <- lapply(new_df_list_non_summarized, function(x) x[["concept"]] %>% unique())
+
 
 # Check that data frames include only approved concept variables --------------------------------------------------
 
