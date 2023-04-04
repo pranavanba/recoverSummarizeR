@@ -134,6 +134,13 @@ approved_concepts_non_summarized <-
                     "sleepbreath" = "sleepsummarybreath")) %>% 
   unique()
 
+excluded_concepts_non_summarized <- 
+  all_cols$value %>% 
+  tolower() %>% 
+  unique() %>% 
+  setdiff(tolower(approved_concepts_non_summarized)) %>% 
+  unique()
+
 approved_concepts_summarized <- 
   concept_map$concept_cd %>%
   grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
@@ -154,14 +161,7 @@ excluded_concepts_summarized <-
   setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
 
-excluded_concepts_non_summarized <- 
-  all_cols$value %>% 
-  tolower() %>% 
-  unique() %>% 
-  setdiff(tolower(approved_concepts_non_summarized)) %>% 
-  unique()
-
-# 2. Melt data frames from wide to long with new concept (variable) and value (variable value) cols (we know which cols are approved or excluded based on lists of concepts created in previous step)
+# 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 
 # Define a function to melt a data frame
 melt_df <- function(df, excluded_concepts) {
@@ -169,7 +169,8 @@ melt_df <- function(df, excluded_concepts) {
   df_melt <- melt(df, 
                   id.vars = intersect(excluded_concepts, names(df)), 
                   measure.vars = approved_cols,
-                  variable.name = "concept", value.name = "value")
+                  variable.name = "concept", 
+                  value.name = "value")
   return(df_melt)
 }
 
