@@ -99,7 +99,7 @@ combine_duplicate_dfs <- function(df_list) {
     df_name <- df_names[i]
     df_matches <- grepl(paste0("^", df_name, "$"), names(df_list))
     if (sum(df_matches) > 1) {
-      df_combined <- do.call(rbind, df_list[df_matches])
+      df_combined <- do.call(bind_rows, df_list[df_matches])
       df_list <- c(df_list[!df_matches], list(df_combined))
       names(df_list)[length(df_list)] <- df_name
     }
@@ -107,13 +107,18 @@ combine_duplicate_dfs <- function(df_list) {
   return(df_list)
 }
 
-df_list <- 
+unified_df_list <- 
   combine_duplicate_dfs(tmp) %>% 
   lapply(function(x) {
     names(x) <- tolower(names(x))
     return(x)})
 
-rm(parent_directory, file_paths, tmp)
+df_list <- lapply(unified_df_list, function(df) {
+  names(df) <- gsub("value", "value_original", names(df))
+  return(df)
+})
+
+rm(parent_directory, file_paths, tmp, unified_df_list)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
@@ -132,10 +137,9 @@ approved_concepts_non_summarized <-
   str_replace_all(c("mins" = "minutes",
                     "avghr" = "averageheartrate",
                     "spo2(?!_)" = "spo2_",
-                    "brth" = "breath",
                     "hrvd" = "hrv_d",
                     "restinghr$" = "restingheartrate",
-                    "sleepbreath" = "sleepsummarybreath")) %>% 
+                    "sleepbrth" = "sleepsummarybreath")) %>% 
   unique()
 
 excluded_concepts_non_summarized <- 
@@ -151,10 +155,9 @@ approved_concepts_summarized <-
   str_replace_all(c("mins" = "minutes",
                     "avghr" = "averageheartrate",
                     "spo2(?!_)" = "spo2_",
-                    "brth" = "breath",
                     "hrvd" = "hrv_d",
                     "restinghr$" = "restingheartrate",
-                    "sleepbreath" = "sleepsummarybreath")) %>% 
+                    "sleepbrth" = "sleepsummarybreath")) %>% 
   unique()
 
 excluded_concepts_summarized <- 
@@ -228,7 +231,7 @@ add_i2b2_prefix <- function(dataset) {
   for (i in seq_along(dataset)) {
     if (grepl("fitbit", dataset_name[i])) {
       dataset_name[i] <- sub("fitbit", "fitbit:", dataset_name[i])
-    } else if (grepl("\\$healthkitv2", dataset_name[i])) {
+    } else if (grepl("healthkitv2", dataset_name[i])) {
       dataset_name[i] <- sub("healthkitv2", "healthkit:", dataset_name[i])
     } else if (grepl("symptomlog$", dataset_name[i])) {
       dataset_name[i] <- sub("symptomlog", "symptomlog", dataset_name[i])
@@ -306,10 +309,9 @@ process_df <- function(df) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
-      {gsub("sleepsummarybreath", "sleepbreath", .)} %>% 
+      {gsub("sleepsummarybreath", "sleepbrth", .)} %>% 
       {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
       {gsub("hrv_d", "hrvd", .)} %>% 
-      {gsub("breath", "brth", .)} %>% 
       {gsub("spo2_", "spo2", ., perl = T)} %>% 
       {gsub("averageheartrate", "avghr", .)} %>% 
       {gsub("minutes", "mins", .)}
