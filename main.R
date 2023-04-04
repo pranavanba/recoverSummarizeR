@@ -52,13 +52,16 @@ if (dir.exists("raw-data")) {
 
 # Get i2b2 concepts map ---------------------------------------------------
 
-concept_map <-
-  googlesheets4::read_sheet(
-    "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
-  )
-1
+get_concepts <- function(url, token_refresh) {
+  x <- googlesheets4::read_sheet(url)
+  token_refresh
+  x$concept_cd %<>% tolower()
+  return(x)
+}
 
-concept_map$concept_cd %<>% tolower()
+concepts_url <- "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
+concepts_map <- get_concepts(concepts_url, token_refresh = 1)
+rm(concepts_url)
 
 # Read parquet files to df ------------------------------------------------
 
@@ -81,9 +84,9 @@ tmp <- lapply(file_paths, function(file_path) {
 
 # Clean up names of parquet datasets
 names(tmp) <-
-  gsub("\\.(parquet|tsv|ndjson)$",
-       "",
+  gsub("\\.(parquet|tsv|ndjson)$", "",
        paste(basename(dirname(file_paths)), "-", basename(file_paths)))
+
 names(tmp) <- gsub("(dataset_|-.*\\.snappy| )", "", names(tmp))
 
 # Include only fitbit datasets for now
@@ -157,12 +160,14 @@ approved_concepts_summarized %<>%
 excluded_concepts_summarized <- 
   all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_summarized))] %>% 
   unique()
+
 excluded_concepts_summarized <- 
   excluded_concepts_summarized[!(tolower(excluded_concepts_summarized) %in% tolower(approved_concepts_summarized))]
 
 excluded_concepts_non_summarized <- 
   all_cols$value[!(tolower(all_cols$value) %in% tolower(approved_concepts_non_summarized))] %>% 
   unique()
+
 excluded_concepts_non_summarized <- 
   excluded_concepts_non_summarized[!(tolower(excluded_concepts_non_summarized) %in% tolower(approved_concepts_non_summarized))]
 
@@ -170,13 +175,11 @@ excluded_concepts_non_summarized <-
 
 # Define a function to melt a data frame
 melt_df <- function(df, excluded_concepts) {
-  # Get indices of approved concept columns
   approved_cols <- setdiff(names(df), excluded_concepts)
-  
-  # Melt the data frame to create a single "value" column
-  df_melt <- melt(df, id.vars = intersect(excluded_concepts, names(df)), measure.vars = approved_cols,
+  df_melt <- melt(df, 
+                  id.vars = intersect(excluded_concepts, names(df)), 
+                  measure.vars = approved_cols,
                   variable.name = "concept", value.name = "value")
-  
   return(df_melt)
 }
 
