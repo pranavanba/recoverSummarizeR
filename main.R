@@ -69,8 +69,8 @@ parent_directory <- "raw-data/parquet-datasets"
 
 file_paths <-
   list.files(path = parent_directory,
-             recursive = TRUE,
-             full.names = TRUE)
+             recursive = T,
+             full.names = T)
 
 tmp <- lapply(file_paths, function(file_path) {
   if (grepl(".parquet$", file_path)) {
@@ -83,37 +83,39 @@ tmp <- lapply(file_paths, function(file_path) {
 })
 
 # Clean up names of parquet datasets
-names(tmp) <-
-  gsub("\\.(parquet|tsv|ndjson)$", "",
-       paste(basename(dirname(file_paths)), "-", basename(file_paths)))
-
-names(tmp) <- gsub("(dataset_|-.*\\.snappy| )", "", names(tmp))
+names(tmp) <- 
+  file_paths %>% 
+  {paste(basename(dirname(.)), "-", basename(.))} %>% 
+  {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
 
 # Include only fitbit datasets for now
-tmp <- tmp[grepl("fitbit", tolower(names(tmp)))]
-tmp <- tmp[!grepl("manifest", tolower(names(tmp)))]
+tmp <- tmp[grepl("fitbit", tolower(names(tmp))) & !grepl("manifest", tolower(names(tmp)))]
 
 # May need to update the following to accommodate multiple multi-part parquet
 # files; currently works with only one mutli-part file: fitbitintradaycombined
 # was the only multi-part parquet file found. Perhaps combine the multi-part
 # files inside the respective raw-data nested folder before reading all into a
 # df.
-multi_part_dfs <- list(names(tmp)[duplicated(names(tmp))] %>% unique())
-names(multi_part_dfs) <- names(tmp)[duplicated(names(tmp))] %>% unique()
 
-tmp_fitbitintradaycombined <- bind_rows(tmp[which(names(tmp) == multi_part_dfs)])
+combine_duplicate_dfs <- function(df_list) {
+  df_names <- unique(names(df_list))
+  
+  for (i in seq_along(df_names)) {
+    df_name <- df_names[i]
+    df_matches <- grepl(paste0("^", df_name, "$"), names(df_list))
+    if (sum(df_matches) > 1) {
+      df_combined <- do.call(rbind, df_list[df_matches])
+      df_list <- c(df_list[!df_matches], list(df_combined))
+      names(df_list)[length(df_list)] <- df_name
+    }
+  }
+  
+  return(df_list)
+}
 
-tmp2 <- tmp[!grepl(multi_part_dfs, names(tmp))]
+df_list <- combine_duplicate_dfs(tmp)
 
-df_list <- c(tmp2, list(tmp_fitbitintradaycombined))
-
-names(df_list)[(df_list %>% names() %>% {(nchar(.)==0)} %>% which())] <- 
-  names(multi_part_dfs)
-
-# names(df_list)[which(!(unique(names(df_list)) %in% unique(names(tmp))))] <-
-#   unique(names(tmp))[which(!(unique(names(tmp)) %in% unique(names(df_list))))]
-
-rm(parent_directory, file_paths, tmp, multi_part_dfs, tmp_fitbitintradaycombined,  tmp2)
+rm(parent_directory, file_paths, tmp)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
@@ -187,9 +189,6 @@ melt_df <- function(df, excluded_concepts) {
 new_df_list_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_summarized))
 new_df_list_non_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_non_summarized))
 rm(df_list)
-
-new_factors_summarized <- lapply(new_df_list_summarized, function(x) x[["concept"]] %>% unique())
-new_factors_non_summarized <- lapply(new_df_list_non_summarized, function(x) x[["concept"]] %>% unique())
 
 filtered_df_list_summarized <- 
   lapply(new_df_list_summarized, function(x) {
