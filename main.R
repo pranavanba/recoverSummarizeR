@@ -91,12 +91,7 @@ names(tmp) <-
 # Include only fitbit datasets for now
 tmp <- tmp[grepl("fitbit", tolower(names(tmp))) & !grepl("manifest", tolower(names(tmp)))]
 
-# May need to update the following to accommodate multiple multi-part parquet
-# files; currently works with only one mutli-part file: fitbitintradaycombined
-# was the only multi-part parquet file found. Perhaps combine the multi-part
-# files inside the respective raw-data nested folder before reading all into a
-# df.
-
+# Combine multi-part parquet datasets
 combine_duplicate_dfs <- function(df_list) {
   df_names <- unique(names(df_list))
   
