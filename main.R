@@ -187,7 +187,8 @@ filtered_df_list_summarized <-
              matches("(?<!_)date(?!_)", perl = T),
              if("concept" %in% colnames(x)) "concept",
              if("value" %in% colnames(x)) "value")
-  })
+  }) %>% 
+  {Filter(function(df) "concept" %in% colnames(df), .)}
 
 filtered_df_list_non_summarized <- 
   df_list %>% 
@@ -198,34 +199,22 @@ filtered_df_list_non_summarized <-
              matches("(?<!_)date(?!_)", perl = T),
              if("concept" %in% colnames(x)) "concept",
              if("value" %in% colnames(x)) "value")
-  })
+  }) %>% 
+  {Filter(function(df) "concept" %in% colnames(df), .)}
 
 rm(df_list)
 
-# # Convert "value" column to numeric
-# convert_column_to_numeric <- function(x) {
-#   if (grepl("devices", deparse(substitute(x)))) {
-#     return(x)
-#     } else {
-#       if ("value" %in% names(x)) {
-#         x$value <- as.numeric(x$value)
-#         }
-#       return(x)
-#     }
-#   }
-# 
-# filtered_df_list <- lapply(filtered_df_list, convert_column_to_numeric)
+convert_col_to_numeric <- function(df_list) {
+  for (i in seq_along(df_list)) {
+    if (!grepl("device", names(df_list)[i])) {
+      df_list[[i]]$value <- sapply(df_list[[i]]$value, as.numeric)
+    }
+  }
+  return(df_list)
+}
 
-filtered_df_list_summarized$fitbitactivitylogs$value %<>% as.numeric()
-filtered_df_list_summarized$fitbitdailydata$value %<>% as.numeric()
-filtered_df_list_summarized$fitbitrestingheartrates$value %<>% as.numeric()
-filtered_df_list_summarized$fitbitsleeplogs$value %<>% as.numeric()
-filtered_df_list_summarized$fitbitintradaycombined$value %<>% as.numeric()
-
-filtered_df_list_non_summarized$fitbitactivitylogs$value %<>% as.numeric()
-filtered_df_list_non_summarized$fitbitdailydata$value %<>% as.numeric()
-filtered_df_list_non_summarized$fitbitrestingheartrates$value %<>% as.numeric()
-filtered_df_list_non_summarized$fitbitsleeplogs$value %<>% as.numeric()
+filtered_df_list_non_summarized %<>% {convert_col_to_numeric(.)}
+filtered_df_list_summarized %<>% {convert_col_to_numeric(.)}
 
 # 3. Format non-summarized data as per i2b2 specs
 
