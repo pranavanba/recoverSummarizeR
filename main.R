@@ -177,7 +177,6 @@ melt_df <- function(df, excluded_concepts) {
 }
 
 # Apply the melt_df function to the list of data frames
-
 filtered_df_list_summarized <- 
   df_list %>% 
   lapply(melt_df, excluded_concepts_summarized) %>% 
@@ -213,8 +212,8 @@ convert_col_to_numeric <- function(df_list) {
   return(df_list)
 }
 
-filtered_df_list_non_summarized %<>% {convert_col_to_numeric(.)}
-filtered_df_list_summarized %<>% {convert_col_to_numeric(.)}
+filtered_df_list_non_summarized %<>% convert_col_to_numeric()
+filtered_df_list_summarized %<>% convert_col_to_numeric()
 
 # 3. Format non-summarized data as per i2b2 specs
 
@@ -246,54 +245,50 @@ add_i2b2_prefix <- function(dataset) {
   return(result)
 }
 
-tmpout_non_summarized <- add_i2b2_prefix(filtered_df_list_non_summarized)
+non_summarized_tmp <- 
+  filtered_df_list_non_summarized %>% 
+  add_i2b2_prefix() %>% 
+  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
+  lapply(function(x) {
+    if ("date" %in% colnames(x) & "modifieddate" %in% colnames(x)) {
+      x %<>% 
+        select(-modifieddate) %>% 
+        rename(startdate = date) %>% 
+        mutate(enddate = NA) %>% 
+        mutate(valtype_cd = class(value)) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        select(-value)
+      return(x)
+    } else if ("date" %in% colnames(x) & !"modifieddate" %in% colnames(x)){
+      x %<>% 
+        rename(startdate = date) %>% 
+        mutate(enddate = NA) %>% 
+        mutate(valtype_cd = class(value)) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        select(-value)
+      return(x)
+    } else if ("startdate" %in% colnames(x) & "enddate" %in% colnames(x)) {
+      x %<>% 
+        mutate(valtype_cd = class(value)) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        select(-value)
+      return(x)
+    }
+  }) %>% 
+  bind_rows()
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
 source("summary_function.R")
 
-# Filter the list to only include data frames with "concept" column and apply the function on the filtered list
-tmp_summarized <- Filter(function(df) "concept" %in% colnames(df), filtered_df_list_summarized)
-output_summarized_list <- lapply(tmp_summarized, summary)
-rm(tmp_summarized)
-tmpout_summarized <- bind_rows(output_summarized_list)
-rm(output_summarized_list)
-
-
-tmp_non_summarized <- Filter(function(df) "concept" %in% colnames(df), tmpout_non_summarized)
-output_non_summarized_list <- lapply(tmp_non_summarized, function(x) {
-  if ("Date" %in% colnames(x) & "ModifiedDate" %in% colnames(x)) {
-    x %<>% 
-      select(-ModifiedDate) %>% 
-      rename(StartDate = Date) %>% 
-      mutate(EndDate = NA) %>% 
-      mutate(valtype_cd = class(value)) %>%
-      mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-             tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
-      select(-value)
-    return(x)
-  } else if ("Date" %in% colnames(x) & !"ModifiedDate" %in% colnames(x)){
-    x %<>% 
-      rename(StartDate = Date) %>% 
-      mutate(EndDate = NA) %>% 
-      mutate(valtype_cd = class(value)) %>%
-      mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-             tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
-      select(-value)
-    return(x)
-  } else if ("StartDate" %in% colnames(x) & "EndDate" %in% colnames(x)) {
-    x %<>% 
-      mutate(valtype_cd = class(value)) %>%
-      mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-             tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
-      select(-value)
-    return(x)
-  }
-  })
-rm(tmp_non_summarized)
-tmpout_non_summarized <- bind_rows(output_non_summarized_list)
-rm(output_non_summarized_list)
-
+# Filter the list to only include data frames with "concept" column and apply the summary function on the filtered list
+tmp <- Filter(function(df) "concept" %in% colnames(df), filtered_df_list_summarized)
+tmp <- lapply(tmp, summary)
+summarized_tmp <- bind_rows(tmp)
+rm(tmp)
 
 # 5. Update output to match concept map format
 
@@ -342,8 +337,8 @@ process_df <- function(df) {
   return(df)
 }
 
-summarized_output <- process_df(tmpout_summarized)
-non_summarized_output <- process_df(tmpout_non_summarized)
+summarized_output <- process_df(summarized_tmp)
+non_summarized_output <- process_df(non_summarized_tmp)
 
 non_summarized_output_filtered <- 
   non_summarized_output %>% 
