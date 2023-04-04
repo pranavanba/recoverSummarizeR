@@ -163,6 +163,8 @@ excluded_concepts_summarized <-
   setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
 
+rm(approved_concepts_non_summarized, approved_concepts_summarized)
+
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 
 # Define a function to melt a data frame
@@ -215,6 +217,8 @@ convert_col_to_numeric <- function(df_list) {
 filtered_df_list_non_summarized %<>% convert_col_to_numeric()
 filtered_df_list_summarized %<>% convert_col_to_numeric()
 
+rm(excluded_concepts_summarized, excluded_concepts_non_summarized)
+
 # 3. Format non-summarized data as per i2b2 specs
 
 add_i2b2_prefix <- function(dataset) {
@@ -222,18 +226,18 @@ add_i2b2_prefix <- function(dataset) {
   result <- list()
 
   for (i in seq_along(dataset)) {
-    if (grepl("\\$fitbit", dataset_name[i])) {
-      dataset_name[i] <- sub("^.*\\$fitbit", "fitbit:", dataset_name[i])
+    if (grepl("fitbit", dataset_name[i])) {
+      dataset_name[i] <- sub("fitbit", "fitbit:", dataset_name[i])
     } else if (grepl("\\$healthkitv2", dataset_name[i])) {
-      dataset_name[i] <- sub("^.*\\$healthkitv2", "healthkit:", dataset_name[i])
+      dataset_name[i] <- sub("healthkitv2", "healthkit:", dataset_name[i])
     } else if (grepl("symptomlog$", dataset_name[i])) {
-      dataset_name[i] <- sub("^.*\\$symptomlog", "symptomlog", dataset_name[i])
+      dataset_name[i] <- sub("symptomlog", "symptomlog", dataset_name[i])
     } else if (grepl("symptomlog_value_s", dataset_name[i])) {
-      dataset_name[i] <- sub("^.*\\$symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name[i])
+      dataset_name[i] <- sub("symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name[i])
     } else if (grepl("symptomlog_value_t", dataset_name[i])) {
-      dataset_name[i] <- sub("^.*\\$symptomlog_value_treatments", "symptomlog:treatments", dataset_name[i])
+      dataset_name[i] <- sub("symptomlog_value_treatments", "symptomlog:treatments", dataset_name[i])
     } else {
-      dataset_name[i] <- gsub("^.*\\$", "survey:", dataset_name[i])
+      dataset_name[i] <- gsub("", "survey:", dataset_name[i])
     }
     
     result[[i]] <-
@@ -280,6 +284,8 @@ non_summarized_tmp <-
   }) %>% 
   bind_rows()
 
+rm(filtered_df_list_non_summarized)
+
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 
 source("summary_function.R")
@@ -290,6 +296,8 @@ summarized_tmp <-
   {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
   lapply(summary) %>% 
   bind_rows()
+
+rm(filtered_df_list_summarized)
 
 # 5. Update output to match concept map format
 
@@ -315,15 +323,15 @@ process_df <- function(df) {
   
   if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
     df %<>% 
-      mutate(StartDate = as_date(StartDate),
-             EndDate = as_date(EndDate)) %>%
+      mutate(startdate = as_date(startdate),
+             enddate = as_date(enddate)) %>%
       left_join(select(concept_map, concept_cd, UNITS_CD),
                 by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
       drop_na(valtype_cd)
   } else {
     df %<>%
-      mutate(StartDate = as_date(StartDate),
-             EndDate = as_date(EndDate)) %>%
+      mutate(startdate = as_date(startdate),
+             enddate = as_date(enddate)) %>%
       mutate(valtype_cd = class(value)) %>%
       mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
              tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
@@ -334,7 +342,6 @@ process_df <- function(df) {
   }
 
   colnames(df) <- tolower(colnames(df))
-
   return(df)
 }
 
@@ -352,5 +359,5 @@ output_concepts <-
 output_concepts %<>% mutate(across(.fns = as.character))
 output_concepts[is.na(output_concepts)] <- ""
 
-rm(summarized_output, non_summarized_output, non_summarized_output_filtered)
+rm(summarized_tmp, non_summarized_tmp, summarized_output, non_summarized_output, non_summarized_output_filtered)
 
