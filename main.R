@@ -107,7 +107,11 @@ combine_duplicate_dfs <- function(df_list) {
   return(df_list)
 }
 
-df_list <- combine_duplicate_dfs(tmp)
+df_list <- 
+  combine_duplicate_dfs(tmp) %>% 
+  lapply(function(x) {
+    names(x) <- tolower(names(x))
+    return(x)})
 
 rm(parent_directory, file_paths, tmp)
 
@@ -136,7 +140,6 @@ approved_concepts_non_summarized <-
 
 excluded_concepts_non_summarized <- 
   all_cols$value %>% 
-  tolower() %>% 
   unique() %>% 
   setdiff(tolower(approved_concepts_non_summarized)) %>% 
   unique()
@@ -156,7 +159,6 @@ approved_concepts_summarized <-
 
 excluded_concepts_summarized <- 
   all_cols$value %>% 
-  tolower() %>% 
   unique() %>% 
   setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
@@ -175,27 +177,30 @@ melt_df <- function(df, excluded_concepts) {
 }
 
 # Apply the melt_df function to the list of data frames
-new_df_list_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_summarized))
-new_df_list_non_summarized <- lapply(df_list, function(x) melt_df(x, excluded_concepts_non_summarized))
-rm(df_list)
 
 filtered_df_list_summarized <- 
-  lapply(new_df_list_summarized, function(x) {
+  df_list %>% 
+  lapply(melt_df, excluded_concepts_summarized) %>% 
+  lapply(function(x) {
     x %>% 
-      select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
+      select(if("participantidentifier" %in% colnames(x)) "participantidentifier",
              matches("(?<!_)date(?!_)", perl = T),
-             if ("concept" %in% colnames(x)) "concept",
-             if ("value" %in% colnames(x)) "value")
-    })
+             if("concept" %in% colnames(x)) "concept",
+             if("value" %in% colnames(x)) "value")
+  })
 
 filtered_df_list_non_summarized <- 
-  lapply(new_df_list_non_summarized, function(x) {
+  df_list %>% 
+  lapply(melt_df, excluded_concepts_non_summarized) %>% 
+  lapply(function(x) {
     x %>% 
-      select(if ("ParticipantIdentifier" %in% colnames(x)) "ParticipantIdentifier",
+      select(if("participantidentifier" %in% colnames(x)) "participantidentifier",
              matches("(?<!_)date(?!_)", perl = T),
-             if ("concept" %in% colnames(x)) "concept",
-             if ("value" %in% colnames(x)) "value")
+             if("concept" %in% colnames(x)) "concept",
+             if("value" %in% colnames(x)) "value")
   })
+
+rm(df_list)
 
 # # Convert "value" column to numeric
 # convert_column_to_numeric <- function(x) {
