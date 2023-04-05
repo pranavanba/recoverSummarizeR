@@ -620,7 +620,7 @@ summary <- function(dataset) {
         rename(startdate = week_summary_start_date) %>%
         rename(enddate = week_summary_end_date)
     } else {
-      if ("datetime" %in% colnames(dataset)) {
+      if ("datetime" %in% colnames(dataset) & !"date" %in% colnames(dataset)) {
         all_pct5 <- 
           dataset %>%
           select(participantidentifier, datetime, concept, value,) %>%
