@@ -116,7 +116,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -124,13 +124,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "5pct",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -152,7 +148,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -160,13 +156,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "95pct",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -188,7 +180,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -196,13 +188,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "mean",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -224,7 +212,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -232,13 +220,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "median",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -260,7 +244,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -268,13 +252,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "variance",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -296,7 +276,7 @@ summary <- function(dataset) {
       mutate(
         startdate = as_date(startdate),
         year = year(startdate),
-        week = epiweek(startdate)
+        week = week(startdate)
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
       group_by(participantidentifier, concept, year, week) %>%
@@ -306,13 +286,9 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          make_date(year, 1, 1) +
-          weeks(week - 1) +
-          days(7 - wday(make_date(year, 1, 1)) + 1),
+          startdate - wday(startdate) + days(1),
         week_summary_end_date =
-          week_summary_start_date +
-          weeks(1) -
-          days(1),
+          week_summary_start_date + days(6),
         timescale = "weekly",
         stat = "numrecords",
         concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -451,7 +427,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -459,13 +435,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "5pct",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -488,7 +460,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -496,13 +468,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "95pct",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -525,7 +493,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -533,13 +501,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "mean",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -562,7 +526,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -570,13 +534,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "median",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -599,7 +559,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -607,13 +567,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "variance",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -636,7 +592,7 @@ summary <- function(dataset) {
         mutate(
           startdate = as_date(startdate),
           year = year(startdate),
-          week = epiweek(startdate)
+          week = week(startdate)
         ) %>%
         filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
         group_by(participantidentifier, concept, year, week) %>%
@@ -646,13 +602,9 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            make_date(year, 1, 1) +
-            weeks(week - 1) +
-            days(7 - wday(make_date(year, 1, 1)) + 1),
+            startdate - wday(startdate) + days(1),
           week_summary_end_date =
-            week_summary_start_date +
-            weeks(1) -
-            days(1),
+            week_summary_start_date + days(6),
           timescale = "weekly",
           stat = "numrecords",
           concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -791,7 +743,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -799,13 +751,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "5pct",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -828,7 +776,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -836,13 +784,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "95pct",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -865,7 +809,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -873,13 +817,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "mean",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -902,7 +842,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -910,13 +850,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "median",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -939,7 +875,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -947,13 +883,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "variance",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
@@ -976,7 +908,7 @@ summary <- function(dataset) {
           mutate(
             startdate = as_date(startdate),
             year = year(startdate),
-            week = epiweek(startdate)
+            week = week(startdate)
           ) %>%
           filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
           group_by(participantidentifier, concept, year, week) %>%
@@ -986,13 +918,9 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              make_date(year, 1, 1) +
-              weeks(week - 1) +
-              days(7 - wday(make_date(year, 1, 1)) + 1),
+              startdate - wday(startdate) + days(1),
             week_summary_end_date =
-              week_summary_start_date +
-              weeks(1) -
-              days(1),
+              week_summary_start_date + days(6),
             timescale = "weekly",
             stat = "numrecords",
             concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
