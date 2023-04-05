@@ -192,7 +192,8 @@ filtered_df_list_summarized <-
              if("concept" %in% colnames(x)) "concept",
              if("value" %in% colnames(x)) "value")
   }) %>% 
-  {Filter(function(df) "concept" %in% colnames(df), .)}
+  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
+  lapply(drop_na, "value")
 
 filtered_df_list_non_summarized <- 
   df_list %>% 
@@ -204,7 +205,8 @@ filtered_df_list_non_summarized <-
              if("concept" %in% colnames(x)) "concept",
              if("value" %in% colnames(x)) "value")
   }) %>% 
-  {Filter(function(df) "concept" %in% colnames(df), .)}
+  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
+  lapply(drop_na, "value")
 
 rm(df_list)
 
