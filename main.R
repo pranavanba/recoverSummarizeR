@@ -16,9 +16,6 @@ install_load(
   "reshape2",
   "lubridate"
 )
-# install_github(
-#   repo="https://github.com/generalui/synapser/tree/reticulate",
-#   ref="reticulate")
 library(synapser)
 
 
