@@ -152,7 +152,7 @@ approved_concepts_summarized <-
   str_replace_all(c("mins" = "minutes",
                     "avghr" = "averageheartrate",
                     "spo2(?!_)" = "spo2_",
-                    "hrvd" = "hrv_d",
+                    "hrv" = "hrv_dailyrmssd",
                     "restinghr$" = "restingheartrate",
                     "sleepbrth" = "sleepsummarybreath")) %>% 
   unique()
@@ -310,7 +310,7 @@ process_df <- function(df) {
       tolower() %>% 
       {gsub("sleepsummarybreath", "sleepbrth", .)} %>% 
       {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
-      {gsub("hrv_d", "hrvd", .)} %>% 
+      {gsub("hrv_dailyrmssd", "hrv", .)} %>% 
       {gsub("spo2_", "spo2", ., perl = T)} %>% 
       {gsub("averageheartrate", "avghr", .)} %>% 
       {gsub("minutes", "mins", .)}
