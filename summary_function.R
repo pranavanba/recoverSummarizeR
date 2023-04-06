@@ -124,7 +124,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -156,7 +156,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -188,7 +188,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -220,7 +220,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -252,7 +252,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -286,7 +286,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          startdate - wday(startdate) + days(1),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = "weekly",
@@ -435,7 +435,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -468,7 +468,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -501,7 +501,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -534,7 +534,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -567,7 +567,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -602,7 +602,7 @@ summary <- function(dataset) {
         ungroup() %>%
         mutate(
           week_summary_start_date =
-            startdate - wday(startdate) + days(1),
+            (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
           week_summary_end_date =
             week_summary_start_date + days(6),
           timescale = "weekly",
@@ -751,7 +751,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
@@ -784,7 +784,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
@@ -817,7 +817,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
@@ -850,7 +850,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
@@ -883,7 +883,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
@@ -918,7 +918,7 @@ summary <- function(dataset) {
           ungroup() %>%
           mutate(
             week_summary_start_date =
-              startdate - wday(startdate) + days(1),
+              (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
             week_summary_end_date =
               week_summary_start_date + days(6),
             timescale = "weekly",
