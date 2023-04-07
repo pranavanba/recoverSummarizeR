@@ -350,20 +350,14 @@ process_df <- function(df) {
   return(df)
 }
 
-summarized_output <- process_df(summarized_tmp)
-non_summarized_output <- process_df(non_summarized_tmp)
-
-non_summarized_output_filtered <- 
-  non_summarized_output %>% 
-  filter(concept %in% concept_map$concept_cd)
-
 output_concepts <- 
-  bind_rows(summarized_output, non_summarized_output_filtered) %>% 
-  arrange(concept)
+  bind_rows(
+    process_df(summarized_tmp),
+    (process_df(non_summarized_tmp) %>% filter(concept %in% concept_map$concept_cd))
+  ) %>% 
+  arrange(concept) %>% 
+  mutate(across(.fns = as.character)) %>% 
+  replace(is.na(.), "<null>")
 
-output_concepts %<>% mutate(across(.fns = as.character))
-
-output_concepts[is.na(output_concepts)] <- "<null>"
-
-rm(summarized_tmp, non_summarized_tmp, summarized_output, non_summarized_output, non_summarized_output_filtered)
+rm(summarized_tmp, non_summarized_tmp)
 
