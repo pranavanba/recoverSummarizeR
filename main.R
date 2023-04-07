@@ -358,7 +358,11 @@ output_concepts <-
   arrange(concept)
 
 output_concepts %<>% mutate(across(.fns = as.character))
-output_concepts[is.na(output_concepts)] <- ""
+
+output_concepts[is.na(output_concepts)] <- "<null>"
+
+output_concepts$valtype_cd[output_concepts$valtype_cd=="numeric"] <- "N"
+output_concepts$valtype_cd[output_concepts$valtype_cd=="character"] <- "T"
 
 rm(summarized_tmp, non_summarized_tmp, summarized_output, non_summarized_output, non_summarized_output_filtered)
 
