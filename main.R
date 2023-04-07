@@ -163,7 +163,7 @@ excluded_concepts_summarized <-
   setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
 
-rm(approved_concepts_non_summarized, approved_concepts_summarized)
+rm(all_cols, approved_concepts_non_summarized, approved_concepts_summarized)
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 
@@ -261,7 +261,8 @@ non_summarized_tmp <-
         select(-modifieddate) %>% 
         rename(startdate = date) %>% 
         mutate(enddate = NA) %>% 
-        mutate(valtype_cd = class(value)) %>%
+        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+                                      class(value) == "character" ~ "T")) %>% 
         mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
                tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
         select(-value)
@@ -270,14 +271,16 @@ non_summarized_tmp <-
       x %<>% 
         rename(startdate = date) %>% 
         mutate(enddate = NA) %>% 
-        mutate(valtype_cd = class(value)) %>%
+        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+                                      class(value) == "character" ~ "T")) %>% 
         mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
                tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
         select(-value)
       return(x)
     } else if ("startdate" %in% colnames(x) & "enddate" %in% colnames(x)) {
       x %<>% 
-        mutate(valtype_cd = class(value)) %>%
+        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+                                      class(value) == "character" ~ "T")) %>% 
         mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
                tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
         select(-value)
@@ -333,7 +336,8 @@ process_df <- function(df) {
     df %<>%
       mutate(startdate = as_date(startdate),
              enddate = as_date(enddate)) %>%
-      mutate(valtype_cd = class(value)) %>%
+      mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+                                    class(value) == "character" ~ "T")) %>%
       mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
              tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
       select(-value) %>%
@@ -360,9 +364,6 @@ output_concepts <-
 output_concepts %<>% mutate(across(.fns = as.character))
 
 output_concepts[is.na(output_concepts)] <- "<null>"
-
-output_concepts$valtype_cd[output_concepts$valtype_cd=="numeric"] <- "N"
-output_concepts$valtype_cd[output_concepts$valtype_cd=="character"] <- "T"
 
 rm(summarized_tmp, non_summarized_tmp, summarized_output, non_summarized_output, non_summarized_output_filtered)
 
