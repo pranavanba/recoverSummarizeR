@@ -3,18 +3,8 @@
 # install.packages("install.load")
 library(install.load)
 install_load(
-  "dplyr",
-  "tidyr",
   "magrittr",
-  "tibble",
-  "devtools",
-  "jsonlite",
-  "stringr",
-  "arrow",
-  "googlesheets4",
-  "readr",
-  "reshape2",
-  "lubridate"
+  "googlesheets4"
 )
 library(synapser)
 
