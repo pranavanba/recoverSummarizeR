@@ -15,7 +15,6 @@ install_load(
   "reshape2",
   "lubridate"
 )
-library(synapser)
 
 
 # Read parquet files to df ------------------------------------------------
