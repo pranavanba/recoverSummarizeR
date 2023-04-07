@@ -11,7 +11,6 @@ install_load(
   "jsonlite",
   "stringr",
   "arrow",
-  "googlesheets4",
   "readr",
   "reshape2",
   "lubridate"
