@@ -10,7 +10,10 @@ Conversion and summarization of parquet data to i2b2 format
 
 3.  Read curated parquet datasets into separate data frames
 
-4.  Convert data into a format usable for export
+4.  Summarize data
+
+5.  Convert data into a format usable for export
+
 
 ### Usage
 1.  Run [get_data.R](/get_data.R) to fetch datasets
