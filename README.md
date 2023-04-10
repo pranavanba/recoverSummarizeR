@@ -8,7 +8,7 @@ Conversion and summarization of parquet data to i2b2 format
 2.  Get i2b2 concepts map (csv file)
 3.  Read curated parquet datasets into separate data frames
 4.  Summarize data
-5.  Convert data into a format usable for export
+5.  Convert output into the desired format for export
 
 ### Usage
 1.  Run [get_data.R](/get_data.R) to fetch datasets
