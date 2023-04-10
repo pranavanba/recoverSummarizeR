@@ -1,6 +1,5 @@
 # Import Libraries --------------------------------------------------------
 
-# install.packages("install.load")
 library(install.load)
 install_load(
   "magrittr",
@@ -13,29 +12,19 @@ library(synapser)
 
 synLogin()
 
-if (dir.exists("raw-data")) {
-  setwd("raw-data/")
-  if (dir.exists("parquet-datasets")) {
-    setwd("parquet-datasets/")
-    system("synapse get -r syn50996868")
-    setwd("..")
-    setwd("..")
-  } else {
-    dir.create("parquet-datasets")
-    setwd("parquet-datasets/")
-    system("synapse get -r syn50996868")
-    setwd("..")
-    setwd("..")
-  }
-} else {
+if(!dir.exists("raw-data")) {
   dir.create("raw-data")
-  setwd("raw-data/")
-  dir.create("parquet-datasets")
-  setwd("parquet-datasets/")
-  system("synapse get -r syn50996868")
-  setwd("..")
-  setwd("..")
 }
+
+setwd("raw-data/")
+
+if(!dir.exists("parquet-datasets")) {
+  dir.create("parquet-datasets")
+}
+
+setwd("parquet-datasets/")
+system("synapse get -r syn50996868")
+setwd("../..")
 
 # Get i2b2 concepts map ---------------------------------------------------
 
