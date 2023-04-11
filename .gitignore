@@ -41,3 +41,6 @@ export_output.R
 /dataset_*
 # Manifest files
 /*MANIFEST*
+# Deliverables
+output_concepts.csv
+concepts_map.csv
