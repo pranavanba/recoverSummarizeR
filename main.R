@@ -1,6 +1,5 @@
 # Import Libraries --------------------------------------------------------
 
-# install.packages("install.load")
 library(install.load)
 install_load(
   "magrittr",
@@ -15,8 +14,10 @@ install_load(
   "arrow",
   "readr",
   "reshape2",
-  "lubridate"
+  "lubridate",
+  "purrr"
 )
+library(synapser)
 
 # Get data ----------------------------------------------------------------
 
@@ -548,7 +549,6 @@ rm(filtered_df_list_summarized)
 # 5. Update output to match concept map format
 
 process_df <- function(df) {
-  
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
@@ -566,39 +566,47 @@ process_df <- function(df) {
       {gsub("minutes", "mins", .)}
   }
   
-  if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
-    df %<>% 
-      mutate(startdate = as_date(startdate),
-             enddate = as_date(enddate)) %>%
-      left_join(select(concept_map, concept_cd, UNITS_CD),
-                by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
-      drop_na(valtype_cd)
+  if (all((c("participantidentifier", "startdate", "enddate", "concept", "value") %in% colnames(df)))) {
+    if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
+      df %<>% 
+        mutate(startdate = as_date(startdate),
+               enddate = as_date(enddate)) %>%
+        left_join(select(concept_map, concept_cd, UNITS_CD),
+                  by = c("concept" = "concept_cd")) %>% 
+        drop_na(valtype_cd)
+    } else {
+      df %<>%
+        mutate(startdate = as_date(startdate),
+               enddate = as_date(enddate)) %>%
+        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+                                      class(value) == "character" ~ "T")) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        select(-value) %>%
+        left_join(select(concept_map, concept_cd, UNITS_CD),
+                  by = c("concept" = "concept_cd")) %>% 
+        drop_na(valtype_cd)
+    }
   } else {
-    df %<>%
-      mutate(startdate = as_date(startdate),
-             enddate = as_date(enddate)) %>%
-      mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
-                                    class(value) == "character" ~ "T")) %>%
-      mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-             tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
-      select(-value) %>%
-      left_join(select(concept_map, concept_cd, UNITS_CD),
-                by = c("concept" = "concept_cd")) %>%  # Add units_cd column from concept map matching rows by concept strings
-      drop_na(valtype_cd)
+    stop("Error: One or all of {parcipantidentifier, startdate, enddate, concept, value} columns not found")
   }
-
   colnames(df) <- tolower(colnames(df))
   return(df)
 }
 
+summarized_tmp2 <- map_if(summarized_tmp, ~"concept" %in% names(.), process_df) %>% as.data.frame()
+non_summarized_tmp2 <- map_if(non_summarized_tmp, ~"concept" %in% names(.), ~process_df(.) %>% filter(concept %in% concept_map$concept_cd)) %>% as.data.frame()
+
 output_concepts <- 
-  bind_rows(
-    process_df(summarized_tmp),
-    (process_df(non_summarized_tmp) %>% filter(concept %in% concept_map$concept_cd))
-  ) %>% 
+  bind_rows(summarized_tmp2, non_summarized_tmp2) %>% 
   arrange(concept) %>% 
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>")
 
-rm(summarized_tmp, non_summarized_tmp)
+rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
 
+# TODO: automate export to csv>synapse
+
+# Export to Synapse -----------------------------------------------------------------------------------------------
+
+# tmp <- File()
