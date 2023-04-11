@@ -592,22 +592,16 @@ rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
 # Export output ---------------------------------------------------------------------------------------------------
 # 1. Write to CSV
 
-if (dir.exists("deliverables")) {
-  write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
-  write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
-} else {
-  dir.create("deliverables")
-  write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
-  write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
-}
+write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
+write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
 folder.synid <- "syn51184127"
 
-tmp <- synapser::File(path = 'deliverables/output_concepts.csv', parent = folder.synid, name = "output_concepts.csv")
+tmp <- synapser::File(path = 'output_concepts.csv', parent = folder.synid, name = "output_concepts.csv")
 tmp <- synapser::synStore(tmp)
 
-tmp <- synapser::File(path = 'deliverables/concepts_map.csv', parent = folder.synid, name = "concepts_map.csv",)
+tmp <- synapser::File(path = 'concepts_map.csv', parent = folder.synid, name = "concepts_map.csv")
 tmp <- synapser::synStore(tmp)
 rm(tmp, folder.synid)
 
