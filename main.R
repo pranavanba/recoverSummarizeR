@@ -607,7 +607,8 @@ rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
 
 # TODO: automate export to csv>synapse
 
-# Export output -----------------------------------------------------------------------------------------------
+# Export output
+-----------------------------------------------------------------------------------------------
 
 # 1. Write to CSV
 
@@ -619,4 +620,13 @@ if (dir.exists("deliverables")) {
   write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
   write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
 }
+
+# 2. Export to Synapse
+folder.synid <- "syn51184127"
+
+tmp <- synapser::File(path = 'deliverables/output_concepts.csv', parent = folder.synid, name = "output_concepts.csv")
+tmp <- synapser::synStore(tmp)
+
+tmp <- synapser::File(path = 'deliverables/concepts_map.csv', parent = folder.synid, name = "concepts_map.csv",)
+tmp <- synapser::synStore(tmp)
 
