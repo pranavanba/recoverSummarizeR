@@ -22,7 +22,9 @@ library(synapser)
 # Get data ----------------------------------------------------------------
 
 synLogin()
-system("synapse get -r syn50996868")
+syn.id <- "syn50996868"
+system(paste("synapse get -r", syn.id))
+rm(syn.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
 
@@ -596,12 +598,14 @@ write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
-folder.synid <- "syn51184127"
 
-tmp <- synapser::File(path = 'output_concepts.csv', parent = folder.synid, name = "output_concepts.csv")
-tmp <- synapser::synStore(tmp)
+store_in_syn_dir <- function(synfolder.id, fileEnt) {
+  fileObj <- synapser::File(path = fileEnt, parent = synfolder.id, name = fileEnt)
+  fileObj <- synapser::synStore(fileObj)
+}
 
-tmp <- synapser::File(path = 'concepts_map.csv', parent = folder.synid, name = "concepts_map.csv")
-tmp <- synapser::synStore(tmp)
-rm(tmp, folder.synid)
+synfolder.id <- "syn51184127"
+store_in_syn_dir(synfolder.id, 'output_concepts.csv')
+store_in_syn_dir(synfolder.id, 'concepts_map.csv')
+rm(synfolder.id)
 
