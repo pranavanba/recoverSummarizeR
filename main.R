@@ -607,6 +607,16 @@ rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
 
 # TODO: automate export to csv>synapse
 
-# Export to Synapse -----------------------------------------------------------------------------------------------
+# Export output -----------------------------------------------------------------------------------------------
 
-# tmp <- File()
+# 1. Write to CSV
+
+if (dir.exists("deliverables")) {
+  write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
+  write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
+} else {
+  dir.create("deliverables")
+  write.csv(output_concepts, file = 'deliverables/output_concepts.csv', row.names = F)
+  write.csv(concept_map, file = 'deliverables/concepts_map.csv', row.names = F)
+}
+
