@@ -22,20 +22,7 @@ library(synapser)
 # Get data ----------------------------------------------------------------
 
 synLogin()
-
-if(!dir.exists("raw-data")) {
-  dir.create("raw-data")
-}
-
-setwd("raw-data/")
-
-if(!dir.exists("parquet-datasets")) {
-  dir.create("parquet-datasets")
-}
-
-setwd("parquet-datasets/")
 system("synapse get -r syn50996868")
-setwd("../..")
 
 # Get i2b2 concepts map ---------------------------------------------------
 
@@ -52,12 +39,8 @@ rm(concepts_url)
 
 # Read parquet files to df ------------------------------------------------
 
-parent_directory <- "raw-data/parquet-datasets"
-
-file_paths <-
-  list.files(path = parent_directory,
-             recursive = T,
-             full.names = T)
+file_paths <- list.files(recursive = T, full.names = T)
+file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
 
 tmp <- lapply(file_paths, function(file_path) {
   if (grepl(".parquet$", file_path)) {
@@ -105,7 +88,7 @@ df_list <- lapply(unified_df_list, function(df) {
   return(df)
 })
 
-rm(parent_directory, file_paths, tmp, unified_df_list)
+rm(file_paths, tmp, unified_df_list)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
