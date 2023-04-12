@@ -28,8 +28,8 @@ rm(parquet.dir.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
 
-tmp.Obj.id <- "syn51320791"
-tmpObj <- synGet(tmp.Obj.id)
+ontology.file.id <- "syn51320791"
+tmpObj <- synGet(ontology.file.id)
 concept_map <- read.csv(tmpObj$path)
 rm(tmpObj)
 
@@ -468,13 +468,22 @@ write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
 
-store_in_syn_dir <- function(synfolder.id, fileEnt) {
+store_in_syn_dir <- function(synfolder.id, fileEnt, used_param = NULL, executed_param = NULL) {
   fileObj <- synapser::File(path = fileEnt, parent = synfolder.id, name = fileEnt)
-  fileObj <- synapser::synStore(fileObj)
+  if (!is.null(used_param) && !is.null(executed_param)) {
+    fileObj <- synapser::synStore(fileObj, used = used_param, executed = executed_param)
+  } else if (!is.null(used_param)) {
+    fileObj <- synapser::synStore(fileObj, used = used_param)
+  } else if (!is.null(executed_param)) {
+    fileObj <- synapser::synStore(fileObj, executed = executed_param)
+  } else {
+    fileObj <- synapser::synStore(fileObj)
+  }
+  return(fileObj)
 }
 
 synfolder.id <- "syn51184127"
-store_in_syn_dir(synfolder.id, 'output_concepts.csv')
-store_in_syn_dir(synfolder.id, 'concepts_map.csv')
-rm(synfolder.id)
+store_in_syn_dir(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/convert2i2b2/blob/main/main.R")
+store_in_syn_dir(synfolder.id, 'concepts_map.csv', used_param = ontology.file.id)
+rm(synfolder.id, ontology.file.id)
 
