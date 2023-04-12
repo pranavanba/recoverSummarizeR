@@ -22,22 +22,16 @@ library(synapser)
 # Get data ----------------------------------------------------------------
 
 synLogin()
-syn.id <- "syn50996868"
+parquet.dir.id <- "syn50996868"
 system(paste("synapse get -r", syn.id))
-rm(syn.id)
+rm(parquet.dir.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
 
-get_concepts <- function(url, token_refresh) {
-  x <- googlesheets4::read_sheet(url)
-  token_refresh
-  x$concept_cd %<>% tolower()
-  return(x)
-}
-
-concepts_url <- "https://docs.google.com/spreadsheets/d/1XagFptBLxk5UW5CzZl-2gA8ncqwWk6XcGVFFSna2R_s/edit?usp=share_link"
-concept_map <- get_concepts(concepts_url, token_refresh = 1)
-rm(concepts_url)
+tmp.Obj.id <- "syn51320791"
+tmpObj <- synGet(tmp.Obj.id)
+concept_map <- read.csv(tmpObj$path)
+rm(tmpObj)
 
 # Read parquet files to df ------------------------------------------------
 
