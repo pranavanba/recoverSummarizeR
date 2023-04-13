@@ -1,29 +1,23 @@
 # Import Libraries --------------------------------------------------------
 
-library(install.load)
-install_load(
-  "magrittr",
-  "googlesheets4",
-  "dplyr",
-  "tidyr",
-  "magrittr",
-  "tibble",
-  "devtools",
-  "jsonlite",
-  "stringr",
-  "arrow",
-  "readr",
-  "reshape2",
-  "lubridate",
-  "purrr"
-)
 library(synapser)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(jsonlite)
+library(stringr)
+library(arrow)
+library(readr)
+library(reshape2)
+library(lubridate)
+library(purrr)
 
 # Get data ----------------------------------------------------------------
 
 synLogin()
 parquet.dir.id <- "syn50996868"
-system(paste("synapse get -r", syn.id))
+system(paste("synapse get -r", parquet.dir.id))
 rm(parquet.dir.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
