@@ -11,5 +11,5 @@ Conversion and summarization of parquet data to i2b2 format
 5.  Convert output into the desired format for export
 
 ### Usage
-1.  Run [get_data.R](/get_data.R) to fetch datasets
-2.  Run [main.R](/main.R) to process, summarize, and format the data, then return the output
+
+1.  Run [main.R](/main.R) to process, summarize, and format the data, then return the output
