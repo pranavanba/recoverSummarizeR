@@ -25,6 +25,7 @@ rm(parquet.dir.id)
 ontology.file.id <- "syn51320791"
 tmpObj <- synGet(ontology.file.id)
 concept_map <- read.csv(tmpObj$path)
+concept_map$concept_cd %<>% tolower()
 rm(tmpObj)
 
 # Read parquet files to df ------------------------------------------------
