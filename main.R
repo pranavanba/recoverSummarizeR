@@ -23,7 +23,7 @@ library(synapser)
 
 synLogin()
 parquet.dir.id <- "syn50996868"
-system(paste("synapse get -r", syn.id))
+system(paste("synapse get -r", parquet.dir.id))
 rm(parquet.dir.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
@@ -89,7 +89,6 @@ rm(file_paths, tmp, unified_df_list)
 # Data Summarization ----------------------------------------------------------------------------------------------
 
 # 1. Store approved and excluded concepts columns
-
 all_cols <- df_list %>%
   lapply(names) %>%
   unlist() %>%
@@ -135,8 +134,6 @@ excluded_concepts_summarized <-
 rm(all_cols, approved_concepts_non_summarized, approved_concepts_summarized)
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
-
-# Define a function to melt a data frame
 melt_df <- function(df, excluded_concepts) {
   approved_cols <- setdiff(names(df), excluded_concepts)
   df_melt <- melt(df, 
@@ -191,7 +188,6 @@ filtered_df_list_summarized %<>% convert_col_to_numeric()
 rm(excluded_concepts_summarized, excluded_concepts_non_summarized)
 
 # 3. Format non-summarized data as per i2b2 specs
-
 add_i2b2_prefix <- function(dataset) {
   dataset_name <- names(dataset)
   result <- list()
@@ -261,7 +257,6 @@ non_summarized_tmp <-
 rm(filtered_df_list_non_summarized)
 
 # 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
-
 summary <- function(dataset) {
   
   summarize_stat_date <- function(dataset, stat, timescale) {
@@ -401,7 +396,6 @@ summarized_tmp <-
 rm(filtered_df_list_summarized)
 
 # 5. Update output to match concept map format
-
 process_df <- function(df) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
@@ -459,15 +453,13 @@ output_concepts <-
 
 rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
 
-
 # Export output ---------------------------------------------------------------------------------------------------
-# 1. Write to CSV
 
+# 1. Write to CSV
 write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
-
 store_in_syn_dir <- function(synfolder.id, fileEnt, used_param = NULL, executed_param = NULL) {
   fileObj <- synapser::File(path = fileEnt, parent = synfolder.id, name = fileEnt)
   if (!is.null(used_param) && !is.null(executed_param)) {
