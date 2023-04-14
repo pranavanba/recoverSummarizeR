@@ -439,6 +439,7 @@ process_df <- function(df) {
 
 output_concepts <- 
   process_df(summarized_tmp) %>% 
+  mutate(nval_num = signif(nval_num, 9)) %>% 
   arrange(concept) %>% 
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>")
