@@ -223,8 +223,8 @@ non_summarized_tmp <-
         mutate(enddate = NA) %>% 
         mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
                                       class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
         select(-value)
       return(x)
     } else if ("date" %in% colnames(x) & !"modifieddate" %in% colnames(x)){
@@ -233,16 +233,16 @@ non_summarized_tmp <-
         mutate(enddate = NA) %>% 
         mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
                                       class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
         select(-value)
       return(x)
     } else if ("startdate" %in% colnames(x) & "enddate" %in% colnames(x)) {
       x %<>% 
         mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
                                       class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
         select(-value)
       return(x)
     }
@@ -423,25 +423,22 @@ process_df <- function(df) {
                enddate = as_date(enddate)) %>%
         mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
                                       class(value) == "character" ~ "T")) %>%
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "numeric" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "character" ~ value))) %>%
+        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
+               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
         select(-value) %>%
         left_join(select(concept_map, concept_cd, UNITS_CD),
                   by = c("concept" = "concept_cd")) %>% 
         drop_na(valtype_cd)
     }
   } else {
-    stop("Error: One or all of {parcipantidentifier, startdate, enddate, concept, value} columns not found")
+    stop("Error: One or all of {participantidentifier, startdate, enddate, concept, value} columns not found")
   }
   colnames(df) <- tolower(colnames(df))
   return(df)
 }
 
-summarized_tmp2 <- map_if(summarized_tmp, ~"concept" %in% names(.), process_df) %>% as.data.frame()
-non_summarized_tmp2 <- map_if(non_summarized_tmp, ~"concept" %in% names(.), ~process_df(.) %>% filter(concept %in% concept_map$concept_cd)) %>% as.data.frame()
-
 output_concepts <- 
-  bind_rows(summarized_tmp2, non_summarized_tmp2) %>% 
+  process_df(summarized_tmp) %>% 
   arrange(concept) %>% 
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>")
