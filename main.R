@@ -1,23 +1,17 @@
 # Import Libraries --------------------------------------------------------
 
-library(install.load)
-install_load(
-  "magrittr",
-  "googlesheets4",
-  "dplyr",
-  "tidyr",
-  "magrittr",
-  "tibble",
-  "devtools",
-  "jsonlite",
-  "stringr",
-  "arrow",
-  "readr",
-  "reshape2",
-  "lubridate",
-  "purrr"
-)
 library(synapser)
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(jsonlite)
+library(stringr)
+library(arrow)
+library(readr)
+library(reshape2)
+library(lubridate)
+library(purrr)
 
 # Get data ----------------------------------------------------------------
 
