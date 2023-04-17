@@ -335,7 +335,8 @@ output_concepts <-
   mutate(nval_num = signif(nval_num, 9)) %>% 
   arrange(concept) %>% 
   mutate(across(.fns = as.character)) %>% 
-  replace(is.na(.), "<null>")
+  replace(is.na(.), "<null>") %>% 
+  filter(nval_num != "<null>" | tval_char != "<null>")
 
 rm(summarized_tmp, str_replacements, str_replacements_rev)
 
