@@ -90,16 +90,21 @@ all_cols <- df_list %>%
   enframe() %>%
   mutate(name = gsub("\\s\\d+|\\d", "", name))
 
+str_replacements <- c("mins" = "minutes",
+                      "avghr" = "averageheartrate",
+                      "spo2" = "spo2_",
+                      "hrv" = "hrv_dailyrmssd",
+                      "restinghr" = "restingheartrate",
+                      "sleepbrth" = "sleepsummarybreath")
+
+str_replacements_rev <- setNames(names(str_replacements), str_replacements)
+str_replacements_rev <- rev(str_replacements_rev)
+
 approved_concepts_summarized <- 
   concept_map$concept_cd %>%
   grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
   str_extract("(?<=:)[^:]*$") %>% 
-  str_replace_all(c("mins" = "minutes",
-                    "avghr" = "averageheartrate",
-                    "spo2(?!_)" = "spo2_",
-                    "hrv" = "hrv_dailyrmssd",
-                    "restinghr$" = "restingheartrate",
-                    "sleepbrth" = "sleepsummarybreath")) %>% 
+  str_replace_all(str_replacements) %>% 
   unique()
 
 excluded_concepts_summarized <- 
@@ -294,18 +299,7 @@ process_df <- function(df) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
-      {gsub("sleepsummarybreath", "sleepbrth", .)} %>% 
-      {gsub("restingheartrate", "restinghr", ., perl = T)} %>% 
-      {gsub("hrv_dailyrmssd", "hrv", .)} %>% 
-      {gsub("spo2_", "spo2", ., perl = T)} %>% 
-      {gsub("averageheartrate", "avghr", .)} %>% 
-      {gsub("minutes", "mins", .)}
-  } else if (any(grepl("mhp:fitbit", df$concept))) {
-    df$concept %<>% 
-      tolower() %>% 
-      {gsub("hrv_d", "hrvd", .)} %>% 
-      {gsub("spo2_", "spo2", ., perl = T)} %>% 
-      {gsub("minutes", "mins", .)}
+      str_replace_all(str_replacements_rev)
   }
   
   if (all((c("participantidentifier", "startdate", "enddate", "concept", "value") %in% colnames(df)))) {
@@ -343,7 +337,7 @@ output_concepts <-
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>")
 
-rm(summarized_tmp)
+rm(summarized_tmp, str_replacements, str_replacements_rev)
 
 # Export output ---------------------------------------------------------------------------------------------------
 
