@@ -90,24 +90,6 @@ all_cols <- df_list %>%
   enframe() %>%
   mutate(name = gsub("\\s\\d+|\\d", "", name))
 
-approved_concepts_non_summarized <- 
-  concept_map$concept_cd %>%
-  grep("^(?!.*(?:summary|trigger)).+$", ., perl = T, value = T) %>% 
-  str_extract("(?<=:)[^:]*$") %>% 
-  str_replace_all(c("mins" = "minutes",
-                    "avghr" = "averageheartrate",
-                    "spo2(?!_)" = "spo2_",
-                    "hrvd" = "hrv_d",
-                    "restinghr$" = "restingheartrate",
-                    "sleepbrth" = "sleepsummarybreath")) %>% 
-  unique()
-
-excluded_concepts_non_summarized <- 
-  all_cols$value %>% 
-  unique() %>% 
-  setdiff(tolower(approved_concepts_non_summarized)) %>% 
-  unique()
-
 approved_concepts_summarized <- 
   concept_map$concept_cd %>%
   grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
@@ -126,7 +108,7 @@ excluded_concepts_summarized <-
   setdiff(tolower(approved_concepts_summarized)) %>% 
   unique()
 
-rm(all_cols, approved_concepts_non_summarized, approved_concepts_summarized)
+rm(all_cols, approved_concepts_summarized)
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 melt_df <- function(df, excluded_concepts) {
@@ -153,19 +135,6 @@ filtered_df_list_summarized <-
   {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
   lapply(drop_na, "value")
 
-filtered_df_list_non_summarized <- 
-  df_list %>% 
-  lapply(melt_df, excluded_concepts_non_summarized) %>% 
-  lapply(function(x) {
-    x %>% 
-      select(if("participantidentifier" %in% colnames(x)) "participantidentifier",
-             matches("(?<!_)date(?!_)", perl = T),
-             if("concept" %in% colnames(x)) "concept",
-             if("value" %in% colnames(x)) "value")
-  }) %>% 
-  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
-  lapply(drop_na, "value")
-
 rm(df_list)
 
 convert_col_to_numeric <- function(df_list) {
@@ -177,81 +146,11 @@ convert_col_to_numeric <- function(df_list) {
   return(df_list)
 }
 
-filtered_df_list_non_summarized %<>% convert_col_to_numeric()
 filtered_df_list_summarized %<>% convert_col_to_numeric()
 
-rm(excluded_concepts_summarized, excluded_concepts_non_summarized)
+rm(excluded_concepts_summarized)
 
-# 3. Format non-summarized data as per i2b2 specs
-add_i2b2_prefix <- function(dataset) {
-  dataset_name <- names(dataset)
-  result <- list()
-
-  for (i in seq_along(dataset)) {
-    if (grepl("fitbit", dataset_name[i])) {
-      dataset_name[i] <- sub("fitbit", "fitbit:", dataset_name[i])
-    } else if (grepl("healthkitv2", dataset_name[i])) {
-      dataset_name[i] <- sub("healthkitv2", "healthkit:", dataset_name[i])
-    } else if (grepl("symptomlog$", dataset_name[i])) {
-      dataset_name[i] <- sub("symptomlog", "symptomlog", dataset_name[i])
-    } else if (grepl("symptomlog_value_s", dataset_name[i])) {
-      dataset_name[i] <- sub("symptomlog_value_symptoms", "symptomlog:symptoms", dataset_name[i])
-    } else if (grepl("symptomlog_value_t", dataset_name[i])) {
-      dataset_name[i] <- sub("symptomlog_value_treatments", "symptomlog:treatments", dataset_name[i])
-    } else {
-      dataset_name[i] <- gsub("", "survey:", dataset_name[i])
-    }
-    
-    result[[i]] <-
-      dataset[[i]] %>%
-      mutate(concept = paste0("mhp:", dataset_name[i], ":", concept))
-  }
-  
-  names(result) <- names(dataset)
-  return(result)
-}
-
-non_summarized_tmp <- 
-  filtered_df_list_non_summarized %>% 
-  add_i2b2_prefix() %>% 
-  {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
-  lapply(function(x) {
-    if ("date" %in% colnames(x) & "modifieddate" %in% colnames(x)) {
-      x %<>% 
-        select(-modifieddate) %>% 
-        rename(startdate = date) %>% 
-        mutate(enddate = NA) %>% 
-        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
-                                      class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
-        select(-value)
-      return(x)
-    } else if ("date" %in% colnames(x) & !"modifieddate" %in% colnames(x)){
-      x %<>% 
-        rename(startdate = date) %>% 
-        mutate(enddate = NA) %>% 
-        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
-                                      class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
-        select(-value)
-      return(x)
-    } else if ("startdate" %in% colnames(x) & "enddate" %in% colnames(x)) {
-      x %<>% 
-        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
-                                      class(value) == "character" ~ "T")) %>% 
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
-        select(-value)
-      return(x)
-    }
-  }) %>% 
-  bind_rows()
-
-rm(filtered_df_list_non_summarized)
-
-# 4. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
+# 3. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 summary <- function(dataset) {
   
   summarize_stat_date <- function(dataset, stat, timescale) {
@@ -390,7 +289,7 @@ summarized_tmp <-
 
 rm(filtered_df_list_summarized)
 
-# 5. Update output to match concept map format
+# 4. Update output to match concept map format
 process_df <- function(df) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
@@ -444,7 +343,7 @@ output_concepts <-
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>")
 
-rm(summarized_tmp, non_summarized_tmp, summarized_tmp2, non_summarized_tmp2)
+rm(summarized_tmp)
 
 # Export output ---------------------------------------------------------------------------------------------------
 
