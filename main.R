@@ -315,7 +315,7 @@ summary <- function(dataset) {
         year = year(startdate),
         week = week(startdate)
       ) %>%
-      filter(startdate >= floor_date(min(startdate), unit = "week", week_start = "Sunday")) %>%
+      filter(startdate >= floor_date(min(startdate), unit = "week", week_start = 7)) %>%
       group_by(participantidentifier, concept, year, week) %>%
       summarise("value" = switch(stat,
                                  "5pct" = quantile(as.numeric(value), 0.05, na.rm = T),
@@ -329,7 +329,7 @@ summary <- function(dataset) {
       ungroup() %>%
       mutate(
         week_summary_start_date =
-          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = "Sunday"),
+          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = 7),
         week_summary_end_date =
           week_summary_start_date + days(6),
         timescale = timescale,
