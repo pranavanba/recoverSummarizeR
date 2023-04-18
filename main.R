@@ -158,7 +158,7 @@ rm(excluded_concepts_summarized)
 # 3. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
 summary <- function(dataset) {
   
-  summarize_stat_date <- function(dataset, stat, timescale) {
+  summarize_stat_date <- function(dataset, timescale) {
     if ("startdate" %in% colnames(dataset) & "enddate" %in% colnames(dataset)) {
       # Do nothing
     } else if ("date" %in% colnames(dataset)) {
@@ -176,30 +176,26 @@ summary <- function(dataset) {
     dataset %>%
       select(participantidentifier, startdate, enddate, concept, value) %>%
       group_by(participantidentifier, concept) %>%
-      mutate("stat_value" = switch(stat,
-                                   "5pct" = quantile(as.numeric(value), 0.05, na.rm = T),
-                                   "95pct" = quantile(as.numeric(value), 0.95, na.rm = T),
-                                   "mean" = mean(as.numeric(value), na.rm = T),
-                                   "median" = median(as.numeric(value), na.rm = T),
-                                   "variance" = var(as.numeric(value), na.rm = T),
-                                   "numrecords" = n()
-      )
-      ) %>%
-      select(-value) %>%
-      rename(value = stat_value) %>%
-      mutate(
-        startdate = as_date(min(startdate)),
-        enddate = as_date(max(enddate)),
-        timescale = timescale,
-        stat = stat,
-        concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
-      ) %>%
-      distinct() %>%
-      ungroup() %>%
-      select(-c(timescale, stat))
+      summarize(startdate = as_date(min(startdate)),
+                enddate = as_date(max(enddate)),
+                mean = mean(as.numeric(value), na.rm = T),
+                median = median(as.numeric(value), na.rm = T),
+                variance = var(as.numeric(value), na.rm = T),
+                `5pct` = quantile(as.numeric(value), 0.05, na.rm = T),
+                `95pct` = quantile(as.numeric(value), 0.95, na.rm = T),
+                numrecords = n(),
+                .groups = "keep") %>%
+      ungroup() %>% 
+      pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
+                   names_to = "stat",
+                   values_to = "value") %>%
+      mutate(concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)) %>%
+      select(participantidentifier, startdate, enddate, concept, value) %>%
+      distinct()
   }
   
-  summarize_weekly_date <- function(dataset, stat, timescale) {
+  
+  summarize_weekly_date <- function(dataset, timescale) {
     if ("startdate" %in% colnames(dataset)) {
       # Do nothing
     } else if ("date" %in% colnames(dataset)) {
@@ -221,66 +217,30 @@ summary <- function(dataset) {
       ) %>%
       filter(startdate >= floor_date(min(startdate), unit = "week", week_start = 7)) %>%
       group_by(participantidentifier, concept, year, week) %>%
-      summarise("value" = switch(stat,
-                                 "5pct" = quantile(as.numeric(value), 0.05, na.rm = T),
-                                 "95pct" = quantile(as.numeric(value), 0.95, na.rm = T),
-                                 "mean" = mean(as.numeric(value), na.rm = T),
-                                 "median" = median(as.numeric(value), na.rm = T),
-                                 "variance" = var(as.numeric(value), na.rm = T),
-                                 "numrecords" = n()
-      ),
+      summarise(`5pct` = quantile(as.numeric(value), 0.05, na.rm = T),
+                `95pct` = quantile(as.numeric(value), 0.95, na.rm = T),
+                mean = mean(as.numeric(value), na.rm = T),
+                median = median(as.numeric(value), na.rm = T),
+                variance = var(as.numeric(value), na.rm = T),
+                numrecords = n(),
+                startdate =
+                  (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = 7),
+                enddate =
+                  startdate + days(6),
       .groups = "keep") %>%
       ungroup() %>%
-      mutate(
-        week_summary_start_date =
-          (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = 7),
-        week_summary_end_date =
-          week_summary_start_date + days(6),
-        timescale = timescale,
-        stat = stat,
-        concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)
-      ) %>%
-      select(-c(year, week)) %>%
-      select(
-        participantidentifier,
-        week_summary_start_date,
-        week_summary_end_date,
-        concept,
-        value
-      ) %>%
-      rename(startdate = week_summary_start_date) %>%
-      rename(enddate = week_summary_end_date)
+      pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
+                   names_to = "stat",
+                   values_to = "value") %>%
+      mutate(concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)) %>%
+      select(participantidentifier, startdate, enddate, concept, value) %>% 
+      distinct()
   }
-  
-  all_pct5 <- summarize_stat_date(dataset, "5pct", "alltime")
-  all_pct95 <- summarize_stat_date(dataset, "95pct", "alltime")
-  all_mean <- summarize_stat_date(dataset, "mean", "alltime")
-  all_median <- summarize_stat_date(dataset, "median", "alltime")
-  all_variance <- summarize_stat_date(dataset, "variance", "alltime")
-  all_numrecords <- summarize_stat_date(drop_na(dataset), "numrecords", "alltime")
 
-  weekly_pct5 <- summarize_weekly_date(dataset, "5pct", "weekly")
-  weekly_pct95 <- summarize_weekly_date(dataset, "95pct", "weekly")
-  weekly_mean <- summarize_weekly_date(dataset, "mean", "weekly")
-  weekly_median <- summarize_weekly_date(dataset, "median", "weekly")
-  weekly_variance <- summarize_weekly_date(dataset, "variance", "weekly")
-  weekly_numrecords <- summarize_weekly_date(drop_na(dataset), "numrecords", "weekly")
-  
-  result <-
-    bind_rows(
-      all_pct5,
-      all_pct95,
-      all_mean,
-      all_median,
-      all_variance,
-      all_numrecords,
-      weekly_pct5,
-      weekly_pct95,
-      weekly_mean,
-      weekly_median,
-      weekly_variance,
-      weekly_numrecords
-    )
+  result <- 
+    bind_rows(summarize_stat_date(dataset, "alltime"), 
+              summarize_weekly_date(dataset, "weekly")) %>% 
+    distinct()
   
   return(result)
 }
@@ -290,7 +250,8 @@ summarized_tmp <-
   filtered_df_list_summarized %>% 
   {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
   lapply(summary) %>% 
-  bind_rows()
+  bind_rows() %>% 
+  distinct()
 
 rm(filtered_df_list_summarized)
 
