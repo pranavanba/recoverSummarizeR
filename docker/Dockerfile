@@ -1,5 +1,7 @@
 FROM rocker/rstudio:latest
 
+ARG GITHUB_TOKEN
+
 RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y git python3 python3-pip python3-venv curl
@@ -7,7 +9,7 @@ RUN apt-get update -y && \
 USER rstudio
 
 RUN cd /home/rstudio && \
-    git clone https://github.com/pranavanba/convert2i2b2.git && \
+    git clone https://pranavanba:${GITHUB_TOKEN}@github.com/pranavanba/convert2i2b2.git && \
     chown -R rstudio:rstudio /home/rstudio/convert2i2b2
 
 RUN Rscript -e 'install.packages(c("reticulate", "magrittr", "dplyr", "tidyr", "tibble", "jsonlite", "stringr", "arrow", "readr", "reshape2", "lubridate", "purrr"))'
