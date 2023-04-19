@@ -9,6 +9,9 @@ RUN apt-get update -y && \
 
 USER rstudio
 
+RUN echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
+RUN echo "username: ${username}"
+
 RUN cd /home/rstudio && \
     git clone https://${username}:${GITHUB_TOKEN}@github.com/pranavanba/convert2i2b2.git && \
     chown -R rstudio:rstudio /home/rstudio/convert2i2b2
