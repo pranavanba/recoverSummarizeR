@@ -16,41 +16,54 @@ library(purrr)
 # Get data ----------------------------------------------------------------
 
 synLogin()
-parquet.dir.id <- "syn50996868"
-system(paste("synapse get -r", parquet.dir.id))
-rm(parquet.dir.id)
 
 # Get i2b2 concepts map ---------------------------------------------------
 
 ontology.file.id <- "syn51320791"
-tmpObj <- synGet(ontology.file.id)
-concept_map <- read.csv(tmpObj$path)
-concept_map$concept_cd %<>% tolower()
-rm(tmpObj)
+
+get_concept_map <- function(syn.id) {
+  df <- 
+    synGet(ontology.file.id) %>% 
+    {read.csv(.$path)} %>% 
+    mutate(concept_cd = tolower(concept_cd))
+  
+  return(df)
+}
+
+concept_map <- get_concept_map(ontology.file.id)
 
 # Read parquet files to df ------------------------------------------------
+parquet.dir.id <- "syn50996868"
 
-file_paths <- list.files(recursive = T, full.names = T)
-file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
+parquet_to_df <- function(dir.id) {
+  system(paste("synapse get -r", dir.id))
 
-tmp <- lapply(file_paths, function(file_path) {
-  if (grepl(".parquet$", file_path)) {
-    read_parquet(file_path)
-  } else if (grepl(".tsv$", file_path)) {
-    read_tsv(file_path, show_col_types = F)
-  } else if (grepl(".ndjson$", file_path)) {
-    ndjson::stream_in(file_path, cls = "tbl")
-  }
-})
+  file_paths <- list.files(recursive = T, full.names = T)
+  file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
+  
+  df_list <- lapply(file_paths, function(file_path) {
+    if (grepl(".parquet$", file_path)) {
+      read_parquet(file_path)
+    } else if (grepl(".tsv$", file_path)) {
+      read_tsv(file_path, show_col_types = F)
+    } else if (grepl(".ndjson$", file_path)) {
+      ndjson::stream_in(file_path, cls = "tbl")
+    }
+  })
+  
+  # Clean up names of parquet datasets
+  names(df_list) <- 
+    file_paths %>% 
+    {paste(basename(dirname(.)), "-", basename(.))} %>% 
+    {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
+  
+  # Include only fitbit datasets for now
+  df_list <- df_list[grepl("fitbit", tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  
+  return(df_list)
+}
 
-# Clean up names of parquet datasets
-names(tmp) <- 
-  file_paths %>% 
-  {paste(basename(dirname(.)), "-", basename(.))} %>% 
-  {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
-
-# Include only fitbit datasets for now
-tmp <- tmp[grepl("fitbit", tolower(names(tmp))) & !grepl("manifest", tolower(names(tmp)))]
+df_list_original <- parquet_to_df(dir.id = parquet.dir.id)
 
 # Combine multi-part parquet datasets
 combine_duplicate_dfs <- function(df_list) {
@@ -68,52 +81,63 @@ combine_duplicate_dfs <- function(df_list) {
   return(df_list)
 }
 
-unified_df_list <- 
-  combine_duplicate_dfs(tmp) %>% 
+df_list_unified_tmp <- 
+  combine_duplicate_dfs(df_list_original) %>% 
   lapply(function(x) {
     names(x) <- tolower(names(x))
     return(x)})
 
-df_list <- lapply(unified_df_list, function(df) {
+df_list <- 
+  df_list_unified_tmp %>% 
+  lapply(function(df) {
   names(df) <- gsub("value", "value_original", names(df))
   return(df)
 })
 
-rm(file_paths, tmp, unified_df_list)
+rm(df_list_original, df_list_unified_tmp)
 
 # Data Summarization ----------------------------------------------------------------------------------------------
 
 # 1. Store approved and excluded concepts columns
-all_cols <- df_list %>%
-  lapply(names) %>%
-  unlist() %>%
-  enframe() %>%
-  mutate(name = gsub("\\s\\d+|\\d", "", name))
-
-str_replacements <- c("mins" = "minutes",
+concept_replacements <- c("mins" = "minutes",
                       "avghr" = "averageheartrate",
                       "spo2" = "spo2_",
                       "hrv" = "hrv_dailyrmssd",
                       "restinghr" = "restingheartrate",
                       "sleepbrth" = "sleepsummarybreath")
 
-str_replacements_rev <- setNames(names(str_replacements), str_replacements)
-str_replacements_rev <- rev(str_replacements_rev)
+reverse_str_pairs <- function(str_pairs) {
+  reversed <- setNames(names(str_pairs), str_pairs)
+  reversed <- rev(reversed)
+  return(reversed)
+}
 
-approved_concepts_summarized <- 
-  concept_map$concept_cd %>%
-  grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
-  str_extract("(?<=:)[^:]*$") %>% 
-  str_replace_all(str_replacements) %>% 
-  unique()
+concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
 
-excluded_concepts_summarized <- 
-  all_cols$value %>% 
-  unique() %>% 
-  setdiff(tolower(approved_concepts_summarized)) %>% 
-  unique()
+diff_concepts <- function(df_list, concept_replacements, concept_map) {
+  all_cols <- df_list %>%
+    lapply(names) %>%
+    unlist() %>%
+    enframe() %>%
+    mutate(name = gsub("\\s\\d+|\\d", "", name))
+  
+  approved_concepts_summarized <- 
+    concept_map$concept_cd %>%
+    grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
+    str_extract("(?<=:)[^:]*$") %>% 
+    str_replace_all(concept_replacements) %>% 
+    unique()
+  
+  excluded_concepts <- 
+    all_cols$value %>% 
+    unique() %>% 
+    setdiff(tolower(approved_concepts_summarized)) %>% 
+    unique()
+  
+  return(excluded_concepts)
+}
 
-rm(all_cols, approved_concepts_summarized)
+excluded_concepts <- diff_concepts(df_list = df_list, concept_replacements = concept_replacements, concept_map = concept_map)
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 melt_df <- function(df, excluded_concepts) {
@@ -127,9 +151,9 @@ melt_df <- function(df, excluded_concepts) {
 }
 
 # Apply the melt_df function to the list of data frames
-filtered_df_list_summarized <- 
+df_list_melted_filtered <- 
   df_list %>% 
-  lapply(melt_df, excluded_concepts_summarized) %>% 
+  lapply(melt_df, excluded_concepts) %>% 
   lapply(function(x) {
     x %>% 
       select(if("participantidentifier" %in% colnames(x)) "participantidentifier",
@@ -151,29 +175,29 @@ convert_col_to_numeric <- function(df_list) {
   return(df_list)
 }
 
-filtered_df_list_summarized %<>% convert_col_to_numeric()
+df_list_melted_filtered %<>% convert_col_to_numeric()
 
-rm(excluded_concepts_summarized)
+rm(excluded_concepts)
 
 # 3. Summarize data on specific time scales (weekly, all-time) for specified statistics (5/95 percentiles, mean, median, variance, number of records)
-summary <- function(dataset) {
+stat_summarize <- function(df) {
   
-  summarize_stat_date <- function(dataset, timescale) {
-    if ("startdate" %in% colnames(dataset) & "enddate" %in% colnames(dataset)) {
+  summarize_stat_date <- function(df, timescale) {
+    if ("startdate" %in% colnames(df) & "enddate" %in% colnames(df)) {
       # Do nothing
-    } else if ("date" %in% colnames(dataset)) {
-      dataset %<>% 
+    } else if ("date" %in% colnames(df)) {
+      df %<>% 
         rename(startdate = date) %>% 
         mutate(enddate = NA)
-    } else if ("datetime" %in% colnames(dataset) & !"date" %in% colnames(dataset)) {
-      dataset %<>% 
+    } else if ("datetime" %in% colnames(df) & !"date" %in% colnames(df)) {
+      df %<>% 
         rename(startdate = datetime) %>% 
         mutate(enddate = NA)
     } else {
       stop("Error: No 'date' column found")
     }
     
-    dataset %>%
+    df %>%
       select(participantidentifier, startdate, enddate, concept, value) %>%
       group_by(participantidentifier, concept) %>%
       summarize(startdate = as_date(min(startdate)),
@@ -195,20 +219,20 @@ summary <- function(dataset) {
   }
   
   
-  summarize_weekly_date <- function(dataset, timescale) {
-    if ("startdate" %in% colnames(dataset)) {
+  summarize_weekly_date <- function(df, timescale) {
+    if ("startdate" %in% colnames(df)) {
       # Do nothing
-    } else if ("date" %in% colnames(dataset)) {
-      dataset %<>% 
+    } else if ("date" %in% colnames(df)) {
+      df %<>% 
         rename(startdate = date)
-    } else if ("datetime" %in% colnames(dataset) & !"date" %in% colnames(dataset)) {
-      dataset %<>% 
+    } else if ("datetime" %in% colnames(df) & !"date" %in% colnames(df)) {
+      df %<>% 
         rename(startdate = datetime)
     } else {
       stop("Error: No 'date' column found")
     }
     
-    dataset %>%
+    df %>%
       select(participantidentifier, concept, value, startdate) %>%
       mutate(
         startdate = as_date(startdate),
@@ -238,29 +262,29 @@ summary <- function(dataset) {
   }
 
   result <- 
-    bind_rows(summarize_stat_date(dataset, "alltime"), 
-              summarize_weekly_date(dataset, "weekly")) %>% 
+    bind_rows(summarize_stat_date(df, "alltime"), 
+              summarize_weekly_date(df, "weekly")) %>% 
     distinct()
   
   return(result)
 }
 
 # Filter the list to only include data frames with "concept" column and apply the summary function on the filtered list
-summarized_tmp <- 
-  filtered_df_list_summarized %>% 
+df_summarized <- 
+  df_list_melted_filtered %>% 
   {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
-  lapply(summary) %>% 
+  lapply(stat_summarize) %>% 
   bind_rows() %>% 
   distinct()
 
-rm(filtered_df_list_summarized)
+rm(df_list_melted_filtered)
 
 # 4. Update output to match concept map format
-process_df <- function(df) {
+process_df <- function(df, concept_map, concept_replacements_reversed) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
-      str_replace_all(str_replacements_rev)
+      str_replace_all(concept_replacements_reversed)
   }
   
   if (all((c("participantidentifier", "startdate", "enddate", "concept", "value") %in% colnames(df)))) {
@@ -292,14 +316,14 @@ process_df <- function(df) {
 }
 
 output_concepts <- 
-  process_df(summarized_tmp) %>% 
+  process_df(df_summarized, concept_map, concept_replacements_reversed) %>% 
   mutate(nval_num = signif(nval_num, 9)) %>% 
   arrange(concept) %>% 
   mutate(across(.fns = as.character)) %>% 
   replace(is.na(.), "<null>") %>% 
   filter(nval_num != "<null>" | tval_char != "<null>")
 
-rm(summarized_tmp, str_replacements, str_replacements_rev)
+rm(df_summarized, concept_replacements, concept_replacements_reversed)
 
 # Export output ---------------------------------------------------------------------------------------------------
 
@@ -308,7 +332,7 @@ write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
-store_in_syn_dir <- function(synfolder.id, fileEnt, used_param = NULL, executed_param = NULL) {
+store_in_syn <- function(synfolder.id, fileEnt, used_param = NULL, executed_param = NULL) {
   fileObj <- synapser::File(path = fileEnt, parent = synfolder.id, name = fileEnt)
   if (!is.null(used_param) && !is.null(executed_param)) {
     fileObj <- synapser::synStore(fileObj, used = used_param, executed = executed_param)
@@ -323,7 +347,7 @@ store_in_syn_dir <- function(synfolder.id, fileEnt, used_param = NULL, executed_
 }
 
 synfolder.id <- "syn51184127"
-store_in_syn_dir(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/convert2i2b2/blob/main/main.R")
-store_in_syn_dir(synfolder.id, 'concepts_map.csv', used_param = ontology.file.id)
+store_in_syn(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/convert2i2b2/blob/main/main.R")
+store_in_syn(synfolder.id, 'concepts_map.csv', used_param = ontology.file.id)
 rm(synfolder.id, ontology.file.id)
 
