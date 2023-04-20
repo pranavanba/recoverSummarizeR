@@ -38,6 +38,7 @@ vignettes/*.pdf
 misc.R
 export_output.R
 get_data.R
+qaqc.R
 # Raw data
 /dataset_*
 # Manifest files
