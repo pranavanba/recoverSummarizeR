@@ -9,7 +9,7 @@ RUN apt-get update -y && \
 
 USER rstudio
 
-COPY ~/convert2i2b2 /home/rstudio/convert2i2b2
+COPY /home/ec2-user/convert2i2b2 /home/rstudio/convert2i2b2
 
 RUN chown -R rstudio:rstudio /home/rstudio/convert2i2b2
 
