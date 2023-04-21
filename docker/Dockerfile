@@ -9,9 +9,15 @@ RUN apt-get update -y && \
 
 USER rstudio
 
+<<<<<<< HEAD
 COPY /home/ec2-user/convert2i2b2 /home/rstudio/convert2i2b2
 
 RUN chown -R rstudio:rstudio /home/rstudio/convert2i2b2
+=======
+RUN cd /home/rstudio && \
+    git clone https://${username}:${GITHUB_TOKEN}@github.com/pranavanba/convert2i2b2.git && \
+    chown -R rstudio:rstudio /home/rstudio/convert2i2b2
+>>>>>>> parent of 2cf2097 (Copy repo from home dir instead of git clone)
 
 RUN Rscript -e 'install.packages(c("reticulate", "magrittr", "dplyr", "tidyr", "tibble", "jsonlite", "stringr", "arrow", "readr", "reshape2", "lubridate", "purrr", "ndjson"))'
 RUN Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
