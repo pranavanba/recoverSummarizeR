@@ -9,9 +9,9 @@ RUN apt-get update -y && \
 
 USER rstudio
 
-RUN cd /home/rstudio && \
-    git clone https://${username}:${GITHUB_TOKEN}@github.com/pranavanba/convert2i2b2.git && \
-    chown -R rstudio:rstudio /home/rstudio/convert2i2b2
+COPY ~/convert2i2b2 /home/rstudio/convert2i2b2
+
+RUN chown -R rstudio:rstudio /home/rstudio/convert2i2b2
 
 RUN Rscript -e 'install.packages(c("reticulate", "magrittr", "dplyr", "tidyr", "tibble", "jsonlite", "stringr", "arrow", "readr", "reshape2", "lubridate", "purrr", "ndjson"))'
 RUN Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
