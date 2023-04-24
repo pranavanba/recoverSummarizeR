@@ -4,7 +4,7 @@ ARG GITHUB_TOKEN
 ARG username
 
 RUN apt-get update -y && \
-    # apt-get upgrade -y && \
+    apt-get upgrade -y && \
     apt-get install -y git python3 python3-pip python3-venv curl
 
 USER rstudio
