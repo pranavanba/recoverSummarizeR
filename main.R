@@ -35,7 +35,7 @@ concept_map <- get_concept_map(ontologyFileID)
 # Read parquet files to df ------------------------------------------------
 parquetDirID <- "syn50996868"
 
-parquet_to_df <- function(synDirID) {
+synget_parquet_to_df <- function(synDirID) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)
@@ -63,7 +63,7 @@ parquet_to_df <- function(synDirID) {
   return(df_list)
 }
 
-df_list_original <- parquet_to_df(synDirID = parquetDirID)
+df_list_original <- synget_parquet_to_df(synDirID = parquetDirID)
 
 # Combine multi-part parquet datasets
 combine_duplicate_dfs <- function(df_list) {
