@@ -1,10 +1,12 @@
 Package: recoverSummarizeR
-Title: What the Package Does (One Line, Title Case)
+Title: Functions for handling and summarizing RECOVER Data
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Authors@R: c(
+    person("Pranav", "Anbarasu", , "pranav.anbarasu@sagebase.org", role = c("aut", "cre")),
+    person("Sage Bionetworks", role = c("cph"))
+           )
+Maintainer: Pranav Anbarasu <pranav.anbarasu@sagebase.org>
+Description: Provides functions for fetching data from and writing data to Synapse, as well as processing and summarizing data
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
