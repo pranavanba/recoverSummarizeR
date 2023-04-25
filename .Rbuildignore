@@ -1,2 +1,8 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+/dataset_*
+/*MANIFEST*
+.DS_Store
+^/misc$
+output_concepts.csv
+concepts_map.csv
