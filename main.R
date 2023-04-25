@@ -19,25 +19,25 @@ synLogin()
 
 # Get i2b2 concepts map ---------------------------------------------------
 
-ontology.file.id <- "syn51320791"
+ontologyFileID <- "syn51320791"
 
-get_concept_map <- function(syn.id) {
+get_concept_map <- function(synID) {
   df <- 
-    synGet(ontology.file.id) %>% 
+    synGet(synID) %>% 
     {read.csv(.$path)} %>% 
     mutate(concept_cd = tolower(concept_cd))
   
   return(df)
 }
 
-concept_map <- get_concept_map(ontology.file.id)
+concept_map <- get_concept_map(ontologyFileID)
 
 # Read parquet files to df ------------------------------------------------
-parquet.dir.id <- "syn50996868"
+parquetDirID <- "syn50996868"
 
-parquet_to_df <- function(dir.id) {
-  system(paste("synapse get -r", dir.id))
-
+parquet_to_df <- function(synDirID) {
+  system(paste("synapse get -r", synDirID))
+  
   file_paths <- list.files(recursive = T, full.names = T)
   file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
   
@@ -63,7 +63,7 @@ parquet_to_df <- function(dir.id) {
   return(df_list)
 }
 
-df_list_original <- parquet_to_df(dir.id = parquet.dir.id)
+df_list_original <- parquet_to_df(synDirID = parquetDirID)
 
 # Combine multi-part parquet datasets
 combine_duplicate_dfs <- function(df_list) {
@@ -90,9 +90,9 @@ df_list_unified_tmp <-
 df_list <- 
   df_list_unified_tmp %>% 
   lapply(function(df) {
-  names(df) <- gsub("value", "value_original", names(df))
-  return(df)
-})
+    names(df) <- gsub("value", "value_original", names(df))
+    return(df)
+  })
 
 rm(df_list_original, df_list_unified_tmp)
 
@@ -100,11 +100,11 @@ rm(df_list_original, df_list_unified_tmp)
 
 # 1. Store approved and excluded concepts columns
 concept_replacements <- c("mins" = "minutes",
-                      "avghr" = "averageheartrate",
-                      "spo2" = "spo2_",
-                      "hrv" = "hrv_dailyrmssd",
-                      "restinghr" = "restingheartrate",
-                      "sleepbrth" = "sleepsummarybreath")
+                          "avghr" = "averageheartrate",
+                          "spo2" = "spo2_",
+                          "hrv" = "hrv_dailyrmssd",
+                          "restinghr" = "restingheartrate",
+                          "sleepbrth" = "sleepsummarybreath")
 
 reverse_str_pairs <- function(str_pairs) {
   reversed <- setNames(names(str_pairs), str_pairs)
@@ -251,7 +251,7 @@ stat_summarize <- function(df) {
                   (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = 7),
                 enddate =
                   startdate + days(6),
-      .groups = "keep") %>%
+                .groups = "keep") %>%
       ungroup() %>%
       pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
                    names_to = "stat",
@@ -260,7 +260,7 @@ stat_summarize <- function(df) {
       select(participantidentifier, startdate, enddate, concept, value) %>% 
       distinct()
   }
-
+  
   result <- 
     bind_rows(summarize_stat_date(df, "alltime"), 
               summarize_weekly_date(df, "weekly")) %>% 
@@ -332,8 +332,8 @@ write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
-store_in_syn <- function(synfolder.id, fileEnt, used_param = NULL, executed_param = NULL) {
-  fileObj <- synapser::File(path = fileEnt, parent = synfolder.id, name = fileEnt)
+store_in_syn <- function(synFolderID, fileEnt, used_param = NULL, executed_param = NULL) {
+  fileObj <- synapser::File(path = fileEnt, parent = synFolderID, name = fileEnt)
   if (!is.null(used_param) && !is.null(executed_param)) {
     fileObj <- synapser::synStore(fileObj, used = used_param, executed = executed_param)
   } else if (!is.null(used_param)) {
@@ -346,8 +346,8 @@ store_in_syn <- function(synfolder.id, fileEnt, used_param = NULL, executed_para
   return(fileObj)
 }
 
-synfolder.id <- "syn51184127"
-store_in_syn(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/convert2i2b2/blob/main/main.R")
-store_in_syn(synfolder.id, 'concepts_map.csv', used_param = ontology.file.id)
-rm(synfolder.id, ontology.file.id)
+synFolderID <- "syn51184127"
+store_in_syn(synFolderID, 'output_concepts.csv', used_param = ontologyFileID, executed_param = "https://github.com/pranavanba/recoverSummarizeR/blob/release/main.R")
+store_in_syn(synFolderID, 'concepts_map.csv', used_param = ontologyFileID)
+rm(synFolderID, ontologyFileID)
 
