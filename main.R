@@ -347,7 +347,7 @@ store_in_syn <- function(synfolder.id, fileEnt, used_param = NULL, executed_para
 }
 
 synfolder.id <- "syn51184127"
-store_in_syn(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/convert2i2b2/blob/main/main.R")
+store_in_syn(synfolder.id, 'output_concepts.csv', used_param = ontology.file.id, executed_param = "https://github.com/pranavanba/recoverSummarizeR/blob/release/main.R")
 store_in_syn(synfolder.id, 'concepts_map.csv', used_param = ontology.file.id)
 rm(synfolder.id, ontology.file.id)
 
