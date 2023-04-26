@@ -166,10 +166,10 @@ df_list_melted_filtered <-
 
 rm(df_list)
 
-convert_col_to_numeric <- function(df_list) {
+convert_col_to_numeric <- function(df_list, df_to_avoid = "device", col_to_convert = "value") {
   for (i in seq_along(df_list)) {
-    if (!grepl("device", names(df_list)[i])) {
-      df_list[[i]]$value <- sapply(df_list[[i]]$value, as.numeric)
+    if (!grepl(df_to_avoid, names(df_list)[i])) {
+      df_list[[i]][[col_to_convert]] <- sapply(df_list[[i]][[col_to_convert]], as.numeric)
     }
   }
   return(df_list)
@@ -332,8 +332,8 @@ write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
 # 2. Export to Synapse
-store_in_syn <- function(synFolderID, fileEnt, used_param = NULL, executed_param = NULL) {
-  fileObj <- synapser::File(path = fileEnt, parent = synFolderID, name = fileEnt)
+store_in_syn <- function(synFolderID, filepath, used_param = NULL, executed_param = NULL) {
+  fileObj <- synapser::File(path = filepath, parent = synFolderID, name = filepath)
   if (!is.null(used_param) && !is.null(executed_param)) {
     fileObj <- synapser::synStore(fileObj, used = used_param, executed = executed_param)
   } else if (!is.null(used_param)) {
