@@ -1,15 +1,16 @@
 Package: recoverSummarizeR
-Title: Functions for handling and summarizing RECOVER Data
+Title: Functions for handling and summarizing data primarily for RECOVER
 Version: 0.0.0.9000
 Authors@R: c(
     person("Pranav", "Anbarasu", , "pranav.anbarasu@sagebase.org", role = c("aut", "cre")),
-    person("Sage Bionetworks", role = c("cph"))
-           )
+    person("Sage Bionetworks", role = "cph")
+  )
 Maintainer: Pranav Anbarasu <pranav.anbarasu@sagebase.org>
-Description: Provides functions for fetching data from and writing data to Synapse, as well as processing and summarizing data.
+Description: Provides functions for fetching data from and writing data to
+    Synapse, as well as processing and summarizing data.
 License: Apache License (>= 2)
+URL: https://github.com/Sage-Bionetworks/recoverSummarizeR
+BugReports: https://github.com/Sage-Bionetworks/recoverSummarizeR/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-URL: https://github.com/Sage-Bionetworks/recoverSummarizeR
-BugReports: https://github.com/Sage-Bionetworks/recoverSummarizeR/issues
