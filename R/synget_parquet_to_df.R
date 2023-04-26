@@ -12,6 +12,10 @@ synget_parquet_to_df <- function(synDirID) {
       read_tsv(file_path, show_col_types = F)
     } else if (grepl(".ndjson$", file_path)) {
       ndjson::stream_in(file_path, cls = "tbl")
+    } else if (grepl(".csv$", file_path)) {
+      read.csv(file_path)
+    } else {
+      stop(paste("Unsupported file format for", file_path))
     }
   })
   
@@ -20,7 +24,6 @@ synget_parquet_to_df <- function(synDirID) {
     {paste(basename(dirname(.)), "-", basename(.))} %>% 
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
   
-  # Include only fitbit datasets for now
   df_list <- df_list[grepl("fitbit", tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
   
   return(df_list)

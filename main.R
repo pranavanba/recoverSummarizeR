@@ -48,6 +48,10 @@ synget_parquet_to_df <- function(synDirID) {
       read_tsv(file_path, show_col_types = F)
     } else if (grepl(".ndjson$", file_path)) {
       ndjson::stream_in(file_path, cls = "tbl")
+    } else if (grepl(".csv$", file_path)) {
+      read.csv(file_path)
+    } else {
+      stop(paste("Unsupported file format for", file_path))
     }
   })
   
