@@ -35,7 +35,7 @@ concept_map <- get_concept_map(ontologyFileID)
 # Read parquet files to df ------------------------------------------------
 parquetDirID <- "syn50996868"
 
-synget_parquet_to_df <- function(synDirID) {
+synget_parquet_to_df <- function(synDirID, name_filter) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)
@@ -55,19 +55,17 @@ synget_parquet_to_df <- function(synDirID) {
     }
   })
   
-  # Clean up names of parquet datasets
   names(df_list) <- 
     file_paths %>% 
     {paste(basename(dirname(.)), "-", basename(.))} %>% 
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
   
-  # Include only fitbit datasets for now
-  df_list <- df_list[grepl("fitbit", tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  df_list <- df_list[grepl(name_filter, tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
   
   return(df_list)
 }
 
-df_list_original <- synget_parquet_to_df(synDirID = parquetDirID)
+df_list_original <- synget_parquet_to_df(parquetDirID, "fitbit")
 
 # Combine multi-part parquet datasets
 combine_duplicate_dfs <- function(df_list) {

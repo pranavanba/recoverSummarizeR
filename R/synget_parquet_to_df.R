@@ -1,5 +1,5 @@
-# This function downloads files from a Synapse directory, reads in specific types of files (.parquet, .tsv, .ndjson), and returns a list of data frames. It then cleans up the names of the data frames and filters to only include those with "fitbit" in their name.
-synget_parquet_to_df <- function(synDirID) {
+# This function downloads files from a Synapse directory, reads in specific types of files (.parquet, .tsv, .ndjson), and returns a list of data frames. It then cleans up the names of the data frames and filters to only include those with the string specified by name_filter in their name.
+synget_parquet_to_df <- function(synDirID, name_filter) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)
@@ -24,7 +24,7 @@ synget_parquet_to_df <- function(synDirID) {
     {paste(basename(dirname(.)), "-", basename(.))} %>% 
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
   
-  df_list <- df_list[grepl("fitbit", tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  df_list <- df_list[grepl(name_filter, tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
   
   return(df_list)
 }
