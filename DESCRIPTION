@@ -17,15 +17,12 @@ RoxygenNote: 7.2.3
 Imports:
     arrow,
     dplyr,
-    jsonlite,
     lubridate,
+    magrittr,
     ndjson,
-    purrr,
     readr,
     reshape2,
     stringr,
     synapser,
     tibble,
     tidyr
-Depends: 
-    magrittr
