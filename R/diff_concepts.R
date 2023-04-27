@@ -3,14 +3,14 @@ diff_concepts <- function(df_list, concept_replacements, concept_map) {
   all_cols <- df_list %>%
     lapply(names) %>%
     unlist() %>%
-    enframe() %>%
-    mutate(name = gsub("\\s\\d+|\\d", "", name))
+    tibble::enframe() %>%
+    dplyr::mutate(name = gsub("\\s\\d+|\\d", "", name))
   
   approved_concepts_summarized <- 
     concept_map$concept_cd %>%
     grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
-    str_extract("(?<=:)[^:]*$") %>% 
-    str_replace_all(concept_replacements) %>% 
+    stringr::str_extract("(?<=:)[^:]*$") %>% 
+    stringr::str_replace_all(concept_replacements) %>% 
     unique()
   
   excluded_concepts <- 

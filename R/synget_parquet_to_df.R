@@ -7,13 +7,13 @@ synget_parquet_to_df <- function(synDirID) {
   
   df_list <- lapply(file_paths, function(file_path) {
     if (grepl(".parquet$", file_path)) {
-      read_parquet(file_path)
+      arrow::read_parquet(file_path)
     } else if (grepl(".tsv$", file_path)) {
-      read_tsv(file_path, show_col_types = F)
+      readr::read_tsv(file_path, show_col_types = F)
     } else if (grepl(".ndjson$", file_path)) {
       ndjson::stream_in(file_path, cls = "tbl")
     } else if (grepl(".csv$", file_path)) {
-      read.csv(file_path)
+      utils::read.csv(file_path)
     } else {
       stop(paste("Unsupported file format for", file_path))
     }

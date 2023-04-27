@@ -6,7 +6,7 @@ combine_duplicate_dfs <- function(df_list) {
     df_name <- df_names[i]
     df_matches <- grepl(paste0("^", df_name, "$"), names(df_list))
     if (sum(df_matches) > 1) {
-      df_combined <- do.call(bind_rows, df_list[df_matches])
+      df_combined <- do.call(dplyr::bind_rows, df_list[df_matches])
       df_list <- c(df_list[!df_matches], list(df_combined))
       names(df_list)[length(df_list)] <- df_name
     }

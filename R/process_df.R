@@ -3,29 +3,29 @@ process_df <- function(df, concept_map, concept_replacements_reversed) {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
-      str_replace_all(concept_replacements_reversed)
+      stringr::str_replace_all(concept_replacements_reversed)
   }
   
   if (all((c("participantidentifier", "startdate", "enddate", "concept", "value") %in% colnames(df)))) {
     if (all(c("valtype_cd", "nval_num", "tval_char") %in% colnames(df))) {
       df %<>% 
-        mutate(startdate = as_date(startdate),
-               enddate = as_date(enddate)) %>%
-        left_join(select(concept_map, concept_cd, UNITS_CD),
+        dplyr::mutate(startdate = lubridate::as_date(startdate),
+               enddate = lubridate::as_date(enddate)) %>%
+        dplyr::left_join(dplyr::select(concept_map, concept_cd, UNITS_CD),
                   by = c("concept" = "concept_cd")) %>% 
-        drop_na(valtype_cd)
+        tidyr::drop_na(valtype_cd)
     } else {
       df %<>%
-        mutate(startdate = as_date(startdate),
-               enddate = as_date(enddate)) %>%
-        mutate(valtype_cd = case_when(class(value) == "numeric" ~ "N", 
+        dplyr::mutate(startdate = lubridate::as_date(startdate),
+               enddate = lubridate::as_date(enddate)) %>%
+        dplyr::mutate(valtype_cd = dplyr::case_when(class(value) == "numeric" ~ "N", 
                                       class(value) == "character" ~ "T")) %>%
-        mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
-               tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
-        select(-value) %>%
-        left_join(select(concept_map, concept_cd, UNITS_CD),
+        dplyr::mutate(nval_num = as.numeric(dplyr::case_when(valtype_cd == "N" ~ value)),
+               tval_char = as.character(dplyr::case_when(valtype_cd == "T" ~ value))) %>%
+        dplyr::select(-value) %>%
+        dplyr::left_join(dplyr::select(concept_map, concept_cd, UNITS_CD),
                   by = c("concept" = "concept_cd")) %>% 
-        drop_na(valtype_cd)
+        tidyr::drop_na(valtype_cd)
     }
   } else {
     stop("Error: One or all of {participantidentifier, startdate, enddate, concept, value} columns not found")
