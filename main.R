@@ -282,7 +282,7 @@ df_summarized <-
 rm(df_list_melted_filtered)
 
 # 4. Update output to match concept map format
-process_df <- function(df, concept_map, concept_replacements_reversed) {
+process_df <- function(df, concept_map, concept_replacements_reversed, concept_map_concepts = "concept_cd", concept_map_units = "UNITS_CD") {
   if (any(grepl("summary", df$concept))) {
     df$concept %<>% 
       tolower() %>% 
@@ -294,8 +294,8 @@ process_df <- function(df, concept_map, concept_replacements_reversed) {
       df %<>% 
         mutate(startdate = as_date(startdate),
                enddate = as_date(enddate)) %>%
-        left_join(select(concept_map, concept_cd, UNITS_CD),
-                  by = c("concept" = "concept_cd")) %>% 
+        left_join(select(concept_map, concept_map_concepts, concept_map_units),
+                  by = c("concept" = concept_map_concepts)) %>% 
         drop_na(valtype_cd)
     } else {
       df %<>%
@@ -306,8 +306,8 @@ process_df <- function(df, concept_map, concept_replacements_reversed) {
         mutate(nval_num = as.numeric(case_when(valtype_cd == "N" ~ value)),
                tval_char = as.character(case_when(valtype_cd == "T" ~ value))) %>%
         select(-value) %>%
-        left_join(select(concept_map, concept_cd, UNITS_CD),
-                  by = c("concept" = "concept_cd")) %>% 
+        left_join(select(concept_map, concept_map_concepts, concept_map_units),
+                  by = c("concept" = concept_map_concepts)) %>% 
         drop_na(valtype_cd)
     }
   } else {
