@@ -116,7 +116,7 @@ reverse_str_pairs <- function(str_pairs) {
 
 concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
 
-diff_concepts <- function(df_list, concept_replacements, concept_map) {
+diff_concepts <- function(df_list, concept_replacements, concept_map, concept_filter_col) {
   all_cols <- df_list %>%
     lapply(names) %>%
     unlist() %>%
@@ -124,7 +124,7 @@ diff_concepts <- function(df_list, concept_replacements, concept_map) {
     mutate(name = gsub("\\s\\d+|\\d", "", name))
   
   approved_concepts_summarized <- 
-    concept_map$concept_cd %>%
+    concept_map[[concept_filter_col]] %>%
     grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
     str_extract("(?<=:)[^:]*$") %>% 
     str_replace_all(concept_replacements) %>% 
@@ -139,7 +139,7 @@ diff_concepts <- function(df_list, concept_replacements, concept_map) {
   return(excluded_concepts)
 }
 
-excluded_concepts <- diff_concepts(df_list = df_list, concept_replacements = concept_replacements, concept_map = concept_map)
+excluded_concepts <- diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col = "concept_cd")
 
 # 2. Melt data frames from wide to long with new concept (variable) and value (variable value) columns
 melt_df <- function(df, excluded_concepts) {
