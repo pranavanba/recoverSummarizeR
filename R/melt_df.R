@@ -30,6 +30,9 @@
 #' melted_df <- melt_df(mtcars, c())
 #' head(melted_df)
 melt_df <- function(df, excluded_concepts) {
+  if (!is.data.frame(df)) stop("df must be a data frame")
+  if (!is.vector(excluded_concepts)) stop("excluded_concepts must be a vector")
+  
   approved_cols <- setdiff(names(df), excluded_concepts)
   df_melt <- reshape2::melt(df, 
                   id.vars = intersect(excluded_concepts, names(df)), 
