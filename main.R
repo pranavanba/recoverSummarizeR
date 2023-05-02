@@ -347,7 +347,7 @@ store_in_syn <- function(synFolderID, fileEnt, used_param = NULL, executed_param
 }
 
 synFolderID <- "syn51184127"
-store_in_syn(synFolderID, 'output_concepts.csv', used_param = ontologyFileID, executed_param = "https://github.com/pranavanba/recoverSummarizeR/blob/release/main.R")
+store_in_syn(synFolderID, 'output_concepts.csv', used_param = ontologyFileID, executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR/blob/release/main.R")
 store_in_syn(synFolderID, 'concepts_map.csv', used_param = ontologyFileID)
 rm(synFolderID, ontologyFileID)
 
