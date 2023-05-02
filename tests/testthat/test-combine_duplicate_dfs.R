@@ -29,3 +29,20 @@ test_that("length of output is correct", {
   
   expect_length(combined_df_list, n-d+u)
 })
+
+test_that("non-list input raises an error", {
+  df1 <- data.frame(a = 1:3, b = letters[1:3],
+                    a = 4:6, c = letters[4:6],
+                    d = 7:9, b = letters[7:9])
+  names(df1) <- c("a", "b", "a", "c", "d", "b")
+  
+  second <- data.frame(a = 1:3, b = letters[1:3],
+                    a = 4:6, c = letters[4:6],
+                    d = 7:9, b = letters[7:9])  
+  
+  expect_error(combine_duplicate_dfs(df1))
+  expect_error(combine_duplicate_dfs(list(second)))
+  expect_error(combine_duplicate_dfs("df1"))
+  expect_error(combine_duplicate_dfs(1))
+  expect_error(combine_duplicate_dfs(NA))
+})
