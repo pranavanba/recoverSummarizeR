@@ -52,5 +52,4 @@ diff_concepts(df_list = df_list,
               concept_replacements = concept_replacements,
               concept_map = concept_map,
               concept_filter_col = "concept")
-# Should return: "col_c" "col_d" "col_e"
 }
