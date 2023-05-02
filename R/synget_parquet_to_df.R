@@ -1,4 +1,23 @@
-# This function downloads files from a Synapse directory, reads in specific types of files (.parquet, .tsv, .ndjson), and returns a list of data frames. It then cleans up the names of the data frames and filters to only include those with the string specified by name_filter in their name.
+#' Recursively download Synapse files/folders
+#'
+#' `synget_parquet_to_df()` recursively downloads files (and maintains the original folder structure) from a Synapse
+#' directory, reads in the specific types of files it finds (.parquet, .tsv, .csv, .ndjson), and returns a list of data
+#' frames. It then removes file extensions and unnecessary prefixes/suffixes from the names of the data frames and
+#' filters the list of data frames to include only those data frames contain the string specified by `name_filter` in
+#' their name.
+#'
+#' @param synDirID A Synapse ID for a folder entity in Synapse.
+#' @param name_filter A string found in the names of the files to be read for use in including only the files that
+#'   contain said string in their names.
+#'
+#' @return A list of data frames whose names contain the string specified by `name_filter`
+#' @export
+#' @examples
+#' \dontrun{
+#' parquetDirectoryID <- "syn12345678"
+#' df_list <- synget_parquet_to_df(parquetDirectoryID, "fitbit")
+#' # df_list will contain only data frames whose names contain the string "fitbit"
+#' }
 synget_parquet_to_df <- function(synDirID, name_filter) {
   system(paste("synapse get -r", synDirID))
   
