@@ -1,15 +1,38 @@
-# This function takes a data frame as input and summarizes the data on specific time scales (weekly, all-time) for the following statistics (5/95 percentiles, mean, median, variance, number of records).
+#' Summarize data in a data frame for i2b2/RECOVER
+#'
+#' `stat_summarize()` takes a data frame as input and summarizes the data in the data frame on specific time scales
+#' (weekly and all-time) for the following statistics: 5/95 percentiles, mean, median, variance, number of records.
+#'
+#' @param df A data frame with `participantidentifier`, `concept`, `value`, and some combination of `startdate`,
+#'   `enddate`, `date`, and `datetime` columns.
+#'
+#' @return A data frame that differs in size from `df`.
+#' @export
+#'
+#' @examples
+#' # Create sample data
+#' df <- data.frame(participantidentifier = c(rep("A", 6), rep("B", 6)),
+#'                  date = c("2022-01-01", "2022-01-05", "2022-01-10", "2022-02-01",
+#'                           "2022-02-05", "2022-02-10", "2022-01-01", "2022-01-06",
+#'                           "2022-01-11", "2022-02-01", "2022-02-06", "2022-02-11"),
+#'                  concept = c("weight", "weight", "weight", "weight", "weight", "weight",
+#'                              "height", "height", "height", "height", "height", "height"),
+#'                              value = c(60, 62, 64, 65, 66, 68, 160, 162, 164, 165, 166, 168))
+#' # Summarize the data
+#' stat_summarize(df)
 stat_summarize <- function(df) {
   
   summarize_stat_date <- function(df, timescale) {
     if ("startdate" %in% colnames(df) & "enddate" %in% colnames(df)) {
       # Do nothing
     } else if ("date" %in% colnames(df)) {
-      df %<>% 
+      df <- 
+        df %>% 
         dplyr::rename(startdate = date) %>% 
         dplyr::mutate(enddate = NA)
     } else if ("datetime" %in% colnames(df) & !"date" %in% colnames(df)) {
-      df %<>% 
+      df <- 
+        df %>% 
         dplyr::rename(startdate = datetime) %>% 
         dplyr::mutate(enddate = NA)
     } else {
@@ -42,10 +65,12 @@ stat_summarize <- function(df) {
     if ("startdate" %in% colnames(df)) {
       # Do nothing
     } else if ("date" %in% colnames(df)) {
-      df %<>% 
+      df <- 
+        df %>% 
         dplyr::rename(startdate = date)
     } else if ("datetime" %in% colnames(df) & !"date" %in% colnames(df)) {
-      df %<>% 
+      df <- 
+        df %>% 
         dplyr::rename(startdate = datetime)
     } else {
       stop("Error: No 'date' column found")
