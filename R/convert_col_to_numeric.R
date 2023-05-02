@@ -20,10 +20,7 @@
 #'
 #' names(my_dfs) <- c("1", "2", "3")
 #'
-#' class(my_dfs[[1]]$value) # should return "character"
-#'
 #' my_dfs <- convert_col_to_numeric(my_dfs)
-#' class(my_dfs[[1]]$value) # should return "numeric"
 #'
 #' # Example 2: Convert "my_col" column in all data frames of 
 #' # my_list to numeric type, except in "exclude_df"
@@ -31,15 +28,15 @@
 #'                 df2 = data.frame(my_col = c("4", "5", "6")),
 #'                 exclude_df = data.frame(my_col = c("7", "8", "9")))
 #'
-#' class(my_list[[1]]$my_col) # should return "character"
-#' class(my_list[[1]]$my_col) # should return "character"
-#' class(my_list[[3]]$my_col) # should return "character"
-#'
 #' my_list <- convert_col_to_numeric(my_list, "exclude", "my_col")
-#' class(my_list[[1]]$my_col) # should return "numeric"
-#' class(my_list[[1]]$my_col) # should return "numeric"
-#' class(my_list[[3]]$my_col) # should return "character"
 convert_col_to_numeric <- function(df_list, df_to_avoid = "device", col_to_convert = "value") {
+  if (is.data.frame(df_list))stop("df_list must be a list of data frames, not a single data frame")
+  if (is.character(df_list)) stop("df_list must be a list of data frames, not a character")
+  if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")
+  if (is.logical(df_list)) stop("df_list must be a list of data frames, not a logical object")
+  if (length(df_list) < 2) stop("df_list must have more than 1 element")
+  if (!(col_to_convert %in% lapply(df_list, names))) stop("The value of col_to_convert is not found in the column names of any data frames in df_list")
+  
   for (i in seq_along(df_list)) {
     if (!grepl(df_to_avoid, names(df_list)[i])) {
       df_list[[i]][[col_to_convert]] <- sapply(df_list[[i]][[col_to_convert]], as.numeric)
