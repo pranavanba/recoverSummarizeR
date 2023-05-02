@@ -10,7 +10,7 @@ RUN apt-get update -y && \
 USER rstudio
 
 RUN cd /home/rstudio && \
-    git clone https://${username}:${GITHUB_TOKEN}@github.com/pranavanba/convert2i2b2.git && \
+    git clone https://${username}:${GITHUB_TOKEN}@github.com/Sage-Bionetworks/recoverSummarizeR.git && \
     chown -R rstudio:rstudio /home/rstudio/convert2i2b2
 
 RUN Rscript -e 'install.packages(c("reticulate", "magrittr", "dplyr", "tidyr", "tibble", "jsonlite", "stringr", "arrow", "readr", "reshape2", "lubridate", "purrr", "ndjson"))'
