@@ -27,9 +27,9 @@
 #'
 #' # Example 3: Melt all columns of the "mtcars" dataset
 #' head(mtcars)
-#' melted_df <- melt_df(mtcars, c())
+#' melted_df <- melt_df(mtcars)
 #' head(melted_df)
-melt_df <- function(df, excluded_concepts) {
+melt_df <- function(df, excluded_concepts = "") {
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!is.vector(excluded_concepts)) stop("excluded_concepts must be a vector")
   

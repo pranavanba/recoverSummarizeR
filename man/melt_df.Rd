@@ -4,7 +4,7 @@
 \alias{melt_df}
 \title{Melt specific columns of a data frame}
 \usage{
-melt_df(df, excluded_concepts)
+melt_df(df, excluded_concepts = "")
 }
 \arguments{
 \item{df}{A data frame.}
@@ -36,6 +36,6 @@ head(melted_df)
 
 # Example 3: Melt all columns of the "mtcars" dataset
 head(mtcars)
-melted_df <- melt_df(mtcars, c())
+melted_df <- melt_df(mtcars)
 head(melted_df)
 }
