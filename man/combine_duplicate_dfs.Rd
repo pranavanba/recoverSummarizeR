@@ -31,11 +31,5 @@ names(df_list) <- c("df1", "df2", "df1", "df3", "df4", "df2")
 
 # Combine the data frames
 combined_df_list <- combine_duplicate_dfs(df_list)
-
-# Check that the function worked as expected
-identical(combined_df_list$df1, df1 \%>\% dplyr::bind_rows(df1))
-identical(combined_df_list$df2, df2 \%>\% dplyr::bind_rows(df2))
-identical(combined_df_list$df3, df3)
-identical(combined_df_list$df4, df4)
-length(combined_df_list) # should be 4
+head(combined_df_list)
 }
