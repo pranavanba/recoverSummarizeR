@@ -37,7 +37,7 @@ parquetDirID <- "syn50996868"
 
 parquet_to_df <- function(synDirID) {
   system(paste("synapse get -r", synDirID))
-
+  
   file_paths <- list.files(recursive = T, full.names = T)
   file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
   
@@ -90,9 +90,9 @@ df_list_unified_tmp <-
 df_list <- 
   df_list_unified_tmp %>% 
   lapply(function(df) {
-  names(df) <- gsub("value", "value_original", names(df))
-  return(df)
-})
+    names(df) <- gsub("value", "value_original", names(df))
+    return(df)
+  })
 
 rm(df_list_original, df_list_unified_tmp)
 
@@ -100,11 +100,11 @@ rm(df_list_original, df_list_unified_tmp)
 
 # 1. Store approved and excluded concepts columns
 concept_replacements <- c("mins" = "minutes",
-                      "avghr" = "averageheartrate",
-                      "spo2" = "spo2_",
-                      "hrv" = "hrv_dailyrmssd",
-                      "restinghr" = "restingheartrate",
-                      "sleepbrth" = "sleepsummarybreath")
+                          "avghr" = "averageheartrate",
+                          "spo2" = "spo2_",
+                          "hrv" = "hrv_dailyrmssd",
+                          "restinghr" = "restingheartrate",
+                          "sleepbrth" = "sleepsummarybreath")
 
 reverse_str_pairs <- function(str_pairs) {
   reversed <- setNames(names(str_pairs), str_pairs)
@@ -251,7 +251,7 @@ stat_summarize <- function(df) {
                   (make_date(year, 1, 1) + weeks(week-1)) %>% floor_date(unit = "week", week_start = 7),
                 enddate =
                   startdate + days(6),
-      .groups = "keep") %>%
+                .groups = "keep") %>%
       ungroup() %>%
       pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
                    names_to = "stat",
@@ -260,7 +260,7 @@ stat_summarize <- function(df) {
       select(participantidentifier, startdate, enddate, concept, value) %>% 
       distinct()
   }
-
+  
   result <- 
     bind_rows(summarize_stat_date(df, "alltime"), 
               summarize_weekly_date(df, "weekly")) %>% 
