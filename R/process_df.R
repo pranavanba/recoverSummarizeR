@@ -69,7 +69,7 @@ process_df <- function(df, concept_map, concept_replacements_reversed, concept_m
         df %>%
         dplyr::mutate(startdate = lubridate::as_date(startdate),
                enddate = lubridate::as_date(enddate)) %>%
-        dplyr::left_join(dplyr::select(concept_map, concept_map_concepts, concept_map_units),
+        dplyr::left_join(dplyr::select(tidyselect::all_of(concept_map, concept_map_concepts, concept_map_units)),
                   by = c("concept" = concept_map_concepts)) %>% 
         tidyr::drop_na(valtype_cd)
     } else {
@@ -81,8 +81,8 @@ process_df <- function(df, concept_map, concept_replacements_reversed, concept_m
                                       class(value) == "character" ~ "T")) %>%
         dplyr::mutate(nval_num = as.numeric(dplyr::case_when(valtype_cd == "N" ~ value)),
                tval_char = as.character(dplyr::case_when(valtype_cd == "T" ~ value))) %>%
-        dplyr::select(-value) %>%
-        dplyr::left_join(dplyr::select(concept_map, concept_map_concepts, concept_map_units),
+        dplyr::select(tidyselect::any_of(-value)) %>%
+        dplyr::left_join(dplyr::select(tidyselect::all_of(concept_map, concept_map_concepts, concept_map_units)),
                   by = c("concept" = concept_map_concepts)) %>% 
         tidyr::drop_na(valtype_cd)
     }
