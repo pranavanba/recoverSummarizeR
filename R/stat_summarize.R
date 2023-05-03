@@ -21,6 +21,7 @@
 #' # Summarize the data
 #' stat_summarize(df)
 stat_summarize <- function(df) {
+  if (!is.data.frame(df)) stop("df must be a data frame")
   
   summarize_stat_date <- function(df, timescale) {
     if ("startdate" %in% colnames(df) & "enddate" %in% colnames(df)) {
