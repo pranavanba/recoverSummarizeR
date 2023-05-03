@@ -18,6 +18,9 @@
 #' print(fruit_colors)
 #' print(reversed_fruit_colors)
 reverse_str_pairs <- function(str_pairs) {
+  if (!is.vector(str_pairs)) stop("str_pairs must be a vector")
+  if (is.numeric(str_pairs)) stop("str_pairs is numeric and must be of type 'character'")
+  
   reversed <- stats::setNames(names(str_pairs), str_pairs)
   reversed <- rev(reversed)
   return(reversed)
