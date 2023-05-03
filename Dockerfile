@@ -1,20 +1,15 @@
 FROM rocker/rstudio:latest
 
-ARG GITHUB_TOKEN
-ARG username
-
 RUN apt-get update -y && \
     apt-get upgrade -y && \
     apt-get install -y git python3 python3-pip python3-venv curl
 
 USER rstudio
 
-RUN cd /home/rstudio && \
-    git clone -b release https://${username}:${GITHUB_TOKEN}@github.com/Sage-Bionetworks/recoverSummarizeR.git && \
-    chown -R rstudio:rstudio /home/rstudio/convert2i2b2
-
-RUN Rscript -e 'install.packages(c("reticulate", "magrittr", "dplyr", "tidyr", "tibble", "jsonlite", "stringr", "arrow", "readr", "reshape2", "lubridate", "purrr", "ndjson"))'
 RUN Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
+RUN Rscript -e 'install.packages("devtools")'
+RUN Rscript -e 'require(devtools)'
+RUN Rscript -e 'install_github("Sage-Bionetworks/recoverSummarizeR")'
 
 USER root
 
