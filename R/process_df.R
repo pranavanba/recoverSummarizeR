@@ -46,6 +46,14 @@
 #' df_processed <- process_df(df, concept_map, concept_replacements_reversed, "concept_cd", "UNITS_CD")
 #' head(df_processed)
 process_df <- function(df, concept_map, concept_replacements_reversed, concept_map_concepts = "concept_cd", concept_map_units = "UNITS_CD") {
+  if (!is.data.frame(df)) stop("df must be a data frame")
+  if (!is.data.frame(concept_map)) stop("concept_map must be a data frame")
+  if (!is.vector(concept_replacements_reversed)) stop("concept_replacements_reversed must be a vector")
+  if (!(concept_map_concepts %in% names(concept_map))) stop("concept_map_concepts must be the name of a column in concept_map")
+  if (!is.character(concept_map_concepts)) stop("concept_map_concepts must be of type 'character'")
+  if (!(concept_map_units %in% names(concept_map))) stop("concept_map_units must be the name of a column in concept_map")
+  if (!is.character(concept_map_units)) stop("concept_map_units must be of type 'character'")
+
   if (any(grepl("summary", df$concept))) {
     df$concept <- 
       df$concept %>% 
