@@ -21,19 +21,19 @@ Two common methods to install and use this package include via your local enviro
 
 1.  Install the package via GitHub
 
-    Currently, `recoverSummarizeR` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
-    
-    ```R
-    install.packages("devtools")
-    require(devtools)
-    install_github("Sage-Bionetworks/recoverSummarizeR")
-    ```
+Currently, `recoverSummarizeR` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
+
+```R
+install.packages("devtools")
+require(devtools)
+install_github("Sage-Bionetworks/recoverSummarizeR")
+```
     
 2.  Attach the package
 
-    ```R
-    library(recoverSummarizeR)
-    ```
+```R
+library(recoverSummarizeR)
+```
 
 ### Docker
 
@@ -91,9 +91,9 @@ Two common methods to install and use this package include via your local enviro
 
 7.  Attach the package
 
-    ```R
-    library(recoverSummarizeR)
-    ```
+```R
+library(recoverSummarizeR)
+```
 
 You must pass `SYNAPSE_AUTH_TOKEN` as an environment variable to `docker run ...`, unless the variable already exists in your shell profile, e.g., `~/.bash_profile`, and has been exported in the same session. A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R).
 
@@ -109,67 +109,50 @@ The flow of the pipeline that `mainflow()` is built on is as follows:
 
 ### `mainflow()` Pipeline
 
-1.  Get ontology file (i2b2 concepts map)
+```R
+# 1.  Get ontology file (i2b2 concepts map)
 
-    ```R
-    get_concept_map(synID)
-    ```
+get_concept_map(synID)
 
-2.  Read data files to data frames
+# 2.  Read data files to data frames
 
-    A.  Get post-ETL data files
+    # A.  Get post-ETL data files
 
-    ```R
     synget_parquet_to_df(synDirID, name_filter)
-    ```
 
-    B.  Combine partitioned (multi-part) datasets
+    # B.  Combine partitioned (multi-part) datasets
 
-    ```R
     combine_duplicate_dfs(df_list)
-    ```
 
-3.  Process and transform the data
+# 3.  Process and transform the data
 
-    A.  Get the excluded (non-approved) i2b2 summary concepts
+    # A.  Get the excluded (non-approved) i2b2 summary concepts
 
-    ```R
     diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
-    ```
 
-    B.  Reshape the data frames that have the relevant data
+    # B.  Reshape the data frames that have the relevant data
 
-    ```R
     melt_df(df, excluded_concepts)
-    ```
 
-    C.  Convert the `value` column of relevant data frames to `numeric` type
+    # C.  Convert the `value` column of relevant data frames to `numeric` type
 
-    ```R
     convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
-    ```
 
-4.  Summarize the relevant data
+# 4.  Summarize the relevant data
 
-    ```R
-    stat_summarize(df)
-    ```
+stat_summarize(df)
 
-5.  Process and transform the output into the desired format for i2b2
+# 5.  Process and transform the output into the desired format for i2b2
 
-    ```R
-    process_df(df, concept_map, concept_replacements_reversed, concept_map_concepts, concept_map_units)
-    ```
+process_df(df, concept_map, concept_replacements_reversed, concept_map_concepts, concept_map_units)
 
-6.  Write the output data frames to CSV files
+# 6.  Write the output data frames to CSV files
 
-    ```R
-    write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
-    write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
-    ```
+write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
+write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
-7.  Store the output in Synapse
+# 7.  Store the output in Synapse
 
-    ```R
-    store_in_syn(synFolderID, filepath, used_param, executed_param)
-    ```
+store_in_syn(synFolderID, filepath, used_param, executed_param)
+
+```
