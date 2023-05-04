@@ -22,66 +22,66 @@ Two common methods to install and use this package include via your local enviro
 1.  Install the package via GitHub
 
     Currently, `recoverSummarizeR` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
-
-    ```r
+    
+    ```R
     install.packages("devtools")
     require(devtools)
     install_github("Sage-Bionetworks/recoverSummarizeR")
     ```
-
+    
 2.  Attach the package
 
-    ```r
+    ```R
     library(recoverSummarizeR)
     ```
 
 ### Docker
 
 1.  Modify your shell profile
-
+    
     A.  Open the file
-
-        ```sh
-        nano ~/.bash_profile
-        ```
-
+    
+    ```Shell
+    nano ~/.bash_profile
+    ```
+    
     B.  Append the following
-
-        ```bash
-        SYNAPSE_AUTH_TOKEN=<your-synapse-personal-access-token>
-        export SYNAPSE_AUTH_TOKEN
-        ```
+    
+    ```Shell
+    SYNAPSE_AUTH_TOKEN=<your-synapse-personal-access-token>
+    export SYNAPSE_AUTH_TOKEN
+    ```
 
     C.  Save the file
 
-        ```sh
-        source ~/.bash_profile
-        ```
+    ```Shell
+    source ~/.bash_profile
+    ```
 
 2.  Build the docker image (two options):
 
     A.  From the directory containing the Dockerfile
 
-        ```sh
-        cd /path/to/Dockerfile
-        docker build <optional-arguments> -t <image-name> .
-        ```
+    ```Shell
+    cd /path/to/Dockerfile
+    docker build <optional-arguments> -t <image-name> .
+    ```
 
-        OR
+    OR
 
     B.  From anywhere
 
-        ```sh
-        docker build <optional-arguments> -t <image-name> -f <path-to-Dockerfile> .
-        ```
+    ```Shell
+    docker build <optional-arguments> -t <image-name> -f <path-to-Dockerfile> .
+    ```
 
 3.  Run the docker container
 
     A.  The value you assign to `PASSWORD` in `docker run ...` will be the password you use to login to the RStudio instance
 
-        ```sh
-        docker run -d -p 8787:8787 --name <container-name> -e PASSWORD=<your-password> -e SYNAPSE_AUTH_TOKEN=$SYNAPSE_AUTH_TOKEN <image-name>
-        ```
+    ```Shell
+    docker run -d -p 8787:8787 --name <container-name> -e PASSWORD=<your-password> -e SYNAPSE_AUTH_TOKEN=$SYNAPSE_AUTH_TOKEN <image-name>
+    ```
 
 4.  Forward local port 8787 (preferably in a new console window)
 
@@ -91,7 +91,7 @@ Two common methods to install and use this package include via your local enviro
 
 7.  Attach the package
 
-    ```r
+    ```R
     library(recoverSummarizeR)
     ```
 
@@ -111,7 +111,7 @@ The flow of the pipeline that `mainflow()` is built on is as follows:
 
 1.  Get ontology file (i2b2 concepts map)
 
-    ```r
+    ```R
     get_concept_map(synID)
     ```
 
@@ -119,57 +119,57 @@ The flow of the pipeline that `mainflow()` is built on is as follows:
 
     A.  Get post-ETL data files
 
-        ```r
-        synget_parquet_to_df(synDirID, name_filter)
-        ```
+    ```R
+    synget_parquet_to_df(synDirID, name_filter)
+    ```
 
     B.  Combine partitioned (multi-part) datasets
 
-        ```r
-        combine_duplicate_dfs(df_list)
-        ```
+    ```R
+    combine_duplicate_dfs(df_list)
+    ```
 
 3.  Process and transform the data
 
     A.  Get the excluded (non-approved) i2b2 summary concepts
 
-        ```r
-        diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
-        ```
+    ```R
+    diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
+    ```
 
     B.  Reshape the data frames that have the relevant data
 
-        ```r
-        melt_df(df, excluded_concepts)
-        ```
+    ```R
+    melt_df(df, excluded_concepts)
+    ```
 
     C.  Convert the `value` column of relevant data frames to `numeric` type
 
-        ```r
-        convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
-        ```
+    ```R
+    convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
+    ```
 
 4.  Summarize the relevant data
 
-    ```r
+    ```R
     stat_summarize(df)
     ```
 
 5.  Process and transform the output into the desired format for i2b2
 
-    ```r
+    ```R
     process_df(df, concept_map, concept_replacements_reversed, concept_map_concepts, concept_map_units)
     ```
 
 6.  Write the output data frames to CSV files
 
-    ```r
+    ```R
     write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
     write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
     ```
 
 7.  Store the output in Synapse
 
-    ```r
+    ```R
     store_in_syn(synFolderID, filepath, used_param, executed_param)
     ```
