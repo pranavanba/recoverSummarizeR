@@ -8,12 +8,9 @@ This package provides functions to help with fetching data from Synapse, as well
 -   Synapse account with relevant project access (for help with Synapse please refer to the [Synapse documentation](https://help.synapse.org/docs/))
 -   Synapse personal access token (`SYNAPSE_AUTH_TOKEN`)
 
-## Installation
+## Installation and Usage
 
-Two common methods to install and use this package include via your local environment or Docker. The advantage of using Docker over a local installation and use of this package is that:
-
-1.  The Dockerfile in this repo contains instructions to create an environment with all dependencies needed for the system and R
-2.  Once the Docker image is built and you will have access to an RStudio instance that you can connect to in any web browser from your local network, eliminating the need to have R installed on your local machine
+Two methods to install and use this package include via your local environment or Docker. The primary purpose of using the Docker method instead of the local installation, in the context of this package, is that the Dockerfile in this repo contains instructions to create an environment with all dependencies needed for the system and R, install the `recoverSummarizeR` package, and automatically execute the `mainflow()` function with input arguments for `mainflow()` provided during the build process in the `docker run ...` command.
 
 ### Local
 
@@ -28,7 +25,7 @@ install.packages("devtools")
 require(devtools)
 install_github("Sage-Bionetworks/recoverSummarizeR")
 ```
-    
+
 2.  Attach the package
 
 ```R
@@ -37,26 +34,34 @@ library(recoverSummarizeR)
 
 ### Docker
 
-1.  Modify your shell profile
-    
-    A.  Open the file
-    
-    ```Shell
-    nano ~/.bash_profile
-    ```
-    
-    B.  Append the following
-    
-    ```Shell
-    SYNAPSE_AUTH_TOKEN=<your-synapse-personal-access-token>
-    export SYNAPSE_AUTH_TOKEN
-    ```
+1.  Add your Synapse personal access token to the environment (2 options)
 
-    C.  Save the file
+    A. For only the current shell session:
 
     ```Shell
-    source ~/.bash_profile
+    export SYNAPSE_AUTH_TOKEN=<your-token>
     ```
+
+    B. For all future shell sessions (modify your shell profile)
+
+    1.  Open the shell profile file (using bash profile as an example)
+
+        ```Shell
+        nano ~/.bash_profile
+        ```
+
+    2.  Append the following
+
+        ```Shell
+        SYNAPSE_AUTH_TOKEN=<your-synapse-personal-access-token>
+        export SYNAPSE_AUTH_TOKEN
+        ```
+
+    3.  Save the file
+
+        ```Shell
+        source ~/.bash_profile
+        ```
 
 2.  Build the docker image (two options):
 
@@ -77,27 +82,31 @@ library(recoverSummarizeR)
 
 3.  Run the docker container
 
-    A.  The value you assign to `PASSWORD` in `docker run ...` will be the password you use to login to the RStudio instance
-
-    ```Shell
-    docker run -d -p 8787:8787 --name <container-name> -e PASSWORD=<your-password> -e SYNAPSE_AUTH_TOKEN=$SYNAPSE_AUTH_TOKEN <image-name>
-    ```
-
-4.  Forward local port 8787 (preferably in a new console window)
-
-5.  Connect to RStudio Server at <http://localhost:8787/>
-
-6.  Login to the RStudio instance with username/password: `rstudio`/`your-password` (your-password was created when running `docker run ...`
-
-7.  Attach the package
-
-```R
-library(recoverSummarizeR)
+```Shell
+docker run --name <docker-container-name> -e SYNAPSE_AUTH_TOKEN=$SYNAPSE_AUTH_TOKEN -e ONTOLOGY_FILE_ID=<synapseID> -e PARQUET_DIR_ID=<synapseID> -e DATASET_NAME_FILTER=<string> -e CONCEPT_REPLACEMENTS=<named-vector-in-parentheses> -e CONCEPT_FILTER_COL=<concept-map-column-name> -e SYN_FOLDER_ID=<synapseID> <docker-image-name>
 ```
 
-You must pass `SYNAPSE_AUTH_TOKEN` as an environment variable to `docker run ...`, unless the variable already exists in your shell profile, e.g., `~/.bash_profile`, and has been exported in the same session. A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R).
+A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R). For help with Synapse, Synapse APIs, Synapse personal access tokens, etc., please refer to the [Synapse documentation](https://help.synapse.org/docs/).
 
-For help with Synapse, Synapse APIs, Synapse personal access tokens, etc., please refer to the [Synapse documentation](https://help.synapse.org/docs/).
+The environment variables passed to `docker run ...` are the input arguments of `mainflow()`, and as such must be provided in order to use the docker method.
+
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable               | Definition                                                                                                                                                                                                       | Example                                                                                                                                                                  |
++========================+==================================================================================================================================================================================================================+==========================================================================================================================================================================+
+| `ONTOLOGY_FILE_ID`     | A Synapse ID for a CSV file stored in Synapse. For RECOVER, this file is the i2b2 concepts map.                                                                                                                  | syn12345678                                                                                                                                                              |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `PARQUET_DIR_ID`       | A Synapse ID for a folder entity in Synapse where the data is stored. For RECOVER, this would be the folder housing the post-ETL parquet data.                                                                   | syn12345678                                                                                                                                                              |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `DATASET_NAME_FILTER`  | A string found in the names of the files to be read. This acts like a filter to include only the files that contain the string in their names.                                                                   | fitbit                                                                                                                                                                   |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `CONCEPT_REPLACEMENTS` | A named vector of strings and their replacements. The names must be valid values of the `concept_filter_col` column of the `concept_map` data frame. For RECOVER, `concept_map` is the ontology file data frame. | "c('mins' = 'minutes', 'avghr' = 'averageheartrate', 'spo2' = 'spo2\_', 'hrv' = 'hrv_dailyrmssd', 'restinghr' = 'restingheartrate', 'sleepbrth' = 'sleepsummarybreath')" |
+|                        |                                                                                                                                                                                                                  |                                                                                                                                                                          |
+|                        |                                                                                                                                                                                                                  | *Must surround `c(…)` in parentheses in `docker run …`*                                                                                                                  |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `CONCEPT_FILTER_COL`   | The column of the `concept_map` data frame that contains "approved concepts" (column names of dataset data frames that are not to be excluded). For RECOVER, `concept_map` is the ontology file data frame.      | concept_cd                                                                                                                                                               |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `SYN_FOLDER_ID`        | A Synapse ID for a folder entity in Synapse where you want to store a file.                                                                                                                                      | syn12345678                                                                                                                                                              |
++------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ## Quick Start
 
@@ -154,5 +163,4 @@ write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 # 7.  Store the output in Synapse
 
 store_in_syn(synFolderID, filepath, used_param, executed_param)
-
 ```
