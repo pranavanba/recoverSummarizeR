@@ -1,7 +1,7 @@
-mainflow <- function(ontologyFileID, parquetDirID, concept_replacements, concept_filter_col, synFolderID) {
+mainflow <- function(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID) {
   concept_map <- get_concept_map(ontologyFileID)
   
-  df_list_original <- synget_parquet_to_df(parquetDirID, "fitbit")
+  df_list_original <- synget_parquet_to_df(parquetDirID, dataset_name_filter)
   
   df_list_unified_tmp <- 
     combine_duplicate_dfs(df_list_original) %>% 
@@ -16,7 +16,7 @@ mainflow <- function(ontologyFileID, parquetDirID, concept_replacements, concept
     })
   
   concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
-  excluded_concepts <- diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col) #= "concept_cd")
+  excluded_concepts <- diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
   
   df_list_melted_filtered <- 
     df_list %>% 

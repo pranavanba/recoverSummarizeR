@@ -4,22 +4,22 @@
 \alias{synget_parquet_to_df}
 \title{Recursively download Synapse files/folders}
 \usage{
-synget_parquet_to_df(synDirID, name_filter)
+synget_parquet_to_df(synDirID, dataset_name_filter)
 }
 \arguments{
 \item{synDirID}{A Synapse ID for a folder entity in Synapse.}
 
-\item{name_filter}{A string found in the names of the files to be read for use in including only the files that
+\item{dataset_name_filter}{A string found in the names of the files to be read for use in including only the files that
 contain said string in their names.}
 }
 \value{
-A list of data frames whose names contain the string specified by \code{name_filter}
+A list of data frames whose names contain the string specified by \code{dataset_name_filter}
 }
 \description{
 \code{synget_parquet_to_df()} recursively downloads files (and maintains the original folder structure) from a Synapse
 directory, reads in the specific types of files it finds (.parquet, .tsv, .csv, .ndjson), and returns a list of data
 frames. It then removes file extensions and unnecessary prefixes/suffixes from the names of the data frames and
-filters the list of data frames to include only those data frames contain the string specified by \code{name_filter} in
+filters the list of data frames to include only those data frames contain the string specified by \code{dataset_name_filter} in
 their name.
 }
 \examples{

@@ -3,14 +3,14 @@
 #' `synget_parquet_to_df()` recursively downloads files (and maintains the original folder structure) from a Synapse
 #' directory, reads in the specific types of files it finds (.parquet, .tsv, .csv, .ndjson), and returns a list of data
 #' frames. It then removes file extensions and unnecessary prefixes/suffixes from the names of the data frames and
-#' filters the list of data frames to include only those data frames contain the string specified by `name_filter` in
+#' filters the list of data frames to include only those data frames contain the string specified by `dataset_name_filter` in
 #' their name.
 #'
 #' @param synDirID A Synapse ID for a folder entity in Synapse.
-#' @param name_filter A string found in the names of the files to be read for use in including only the files that
+#' @param dataset_name_filter A string found in the names of the files to be read for use in including only the files that
 #'   contain said string in their names.
 #'
-#' @return A list of data frames whose names contain the string specified by `name_filter`
+#' @return A list of data frames whose names contain the string specified by `dataset_name_filter`
 #' @export
 #' @examples
 #' \dontrun{
@@ -18,7 +18,7 @@
 #' df_list <- synget_parquet_to_df(parquetDirectoryID, "fitbit")
 #' # df_list will contain only data frames whose names contain the string "fitbit"
 #' }
-synget_parquet_to_df <- function(synDirID, name_filter) {
+synget_parquet_to_df <- function(synDirID, dataset_name_filter) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)
@@ -43,7 +43,7 @@ synget_parquet_to_df <- function(synDirID, name_filter) {
     {paste(basename(dirname(.)), "-", basename(.))} %>% 
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
   
-  df_list <- df_list[grepl(name_filter, tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  df_list <- df_list[grepl(dataset_name_filter, tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
   
   return(df_list)
 }
