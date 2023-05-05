@@ -39,6 +39,7 @@ misc.R
 export_output.R
 get_data.R
 qaqc.R
+main.R
 # Raw data
 /dataset_*
 # Manifest files
