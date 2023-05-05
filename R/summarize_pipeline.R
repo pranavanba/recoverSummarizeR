@@ -1,3 +1,35 @@
+#' Execute recoverSummarizeR main pipeline
+#'
+#' @param ontologyFileID A Synapse ID for a CSV file stored in Synapse. For RECOVER, this file is the i2b2 concepts map.
+#' @param parquetDirID A Synapse ID for a folder entity in Synapse where the data is stored. For RECOVER, this would be
+#'   the folder housing the post-ETL parquet data.
+#' @inheritParams get_concept_map
+#' @inheritParams synget_parquet_to_df
+#' @inheritParams diff_concepts
+#' @inheritParams store_in_syn
+#' @export
+#' @examples
+#' \dontrun{
+#' synapser::synLogin()
+#' ontologyFileID <- "syn12345678"
+#' parquetDirID <- "syn87654321"
+#' dataset_name_filter <- "fitbit"
+#' concept_replacements <- c("mins" = "minutes",
+#'                           "avghr" = "averageheartrate",
+#'                           "spo2" = "spo2_",
+#'                           "hrv" = "hrv_dailyrmssd",
+#'                           "restinghr" = "restingheartrate",
+#'                           "sleepbrth" = "sleepsummarybreath")
+#' concept_filter_col <- "concept_cd"
+#' synFolderID <- "syn18273645"
+#' 
+#' summarize_pipeline(ontologyFileID = ontologyFileID,
+#'                    parquetDirID = parquetDirID,
+#'                    dataset_name_filter = dataset_name_filter,
+#'                    concept_replacements = concept_replacements,
+#'                    concept_filter_col = concept_filter_col,
+#'                    synFolderID = synFolderID)
+#' }
 summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID) {
   concept_map <- get_concept_map(ontologyFileID)
   
