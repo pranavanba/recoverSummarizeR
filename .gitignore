@@ -46,3 +46,5 @@ qaqc.R
 # Deliverables
 output_concepts.csv
 concepts_map.csv
+# Misc directories
+/misc
