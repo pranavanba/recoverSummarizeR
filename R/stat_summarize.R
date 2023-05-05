@@ -22,6 +22,7 @@
 #' stat_summarize(df)
 stat_summarize <- function(df) {
   if (!is.data.frame(df)) stop("df must be a data frame")
+  if (!all(c("participantidentifier", "concept", "value") %in% colnames(df))) stop("'participantidentifier', 'concept', and 'value' columns must be present in df")
   
   summarize_stat_date <- function(df, timescale) {
     if ("startdate" %in% colnames(df) & "enddate" %in% colnames(df)) {
@@ -37,7 +38,7 @@ stat_summarize <- function(df) {
         dplyr::rename(startdate = datetime) %>% 
         dplyr::mutate(enddate = NA)
     } else {
-      stop("Error: No 'date' column found")
+      stop("No 'startdate', 'enddate', 'date', or 'datetime' column found")
     }
     
     df %>%
@@ -73,7 +74,7 @@ stat_summarize <- function(df) {
         df %>% 
         dplyr::rename(startdate = datetime)
     } else {
-      stop("Error: No 'date' column found")
+      stop("No 'startdate, enddate, date, or datetime' column found")
     }
     
     df %>%
