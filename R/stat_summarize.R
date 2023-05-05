@@ -43,15 +43,14 @@ stat_summarize <- function(df) {
     df %>%
       dplyr::select(participantidentifier, startdate, enddate, concept, value) %>%
       dplyr::group_by(participantidentifier, concept) %>%
-      dplyr::summarize(startdate = lubridate::as_date(min(startdate)),
+      dplyr::reframe(startdate = lubridate::as_date(min(startdate)),
                 enddate = lubridate::as_date(max(enddate)),
                 mean = mean(as.numeric(value), na.rm = T),
                 median = stats::median(as.numeric(value), na.rm = T),
                 variance = stats::var(as.numeric(value), na.rm = T),
                 `5pct` = stats::quantile(as.numeric(value), 0.05, na.rm = T),
                 `95pct` = stats::quantile(as.numeric(value), 0.95, na.rm = T),
-                numrecords = dplyr::n(),
-                .groups = "keep") %>%
+                numrecords = dplyr::n()) %>%
       dplyr::ungroup() %>% 
       tidyr::pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
                    names_to = "stat",
@@ -84,7 +83,7 @@ stat_summarize <- function(df) {
                     week = lubridate::week(startdate)) %>%
       dplyr::filter(startdate >= lubridate::floor_date(min(startdate), unit = "week", week_start = 7)) %>%
       dplyr::group_by(participantidentifier, concept, year, week) %>%
-      dplyr::summarise(`5pct` = stats::quantile(as.numeric(value), 0.05, na.rm = T),
+      dplyr::reframe(`5pct` = stats::quantile(as.numeric(value), 0.05, na.rm = T),
                 `95pct` = stats::quantile(as.numeric(value), 0.95, na.rm = T),
                 mean = mean(as.numeric(value), na.rm = T),
                 median = stats::median(as.numeric(value), na.rm = T),
@@ -93,8 +92,7 @@ stat_summarize <- function(df) {
                 startdate =
                   (lubridate::make_date(year, 1, 1) + lubridate::weeks(week-1)) %>% lubridate::floor_date(unit = "week", week_start = 7),
                 enddate =
-                  startdate + lubridate::days(6),
-                .groups = "keep") %>%
+                  startdate + lubridate::days(6)) %>%
       dplyr::ungroup() %>%
       tidyr::pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
                    names_to = "stat",
