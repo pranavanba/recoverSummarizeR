@@ -14,12 +14,12 @@ Currently, `recoverSummarizeR` is not available via CRAN, so it must be installe
 
 ```R
 install.packages("devtools")
-devtools::install_github("Sage-Bionetworks/recoverSummarizeR")
+devtools::install_github("Sage-Bionetworks/recoverSummarizeR", ref = "release")
 ```
 
 ## Docker
 
-There are two methods to install and use this package: yourself or Docker. The primary purpose of using the Docker method, in the context of this package, is that the Dockerfile in this repo contains instructions to create an environment with all dependencies needed for the system and R, install the `recoverSummarizeR` package, and automatically execute the `mainflow()` function with input arguments for `mainflow()` provided during the build process in the `docker run ...` command.
+There are two methods to install and use this package: yourself or Docker. The primary purpose of using the Docker method, in the context of this package, is that the Dockerfile in this repo contains instructions to create an environment with all dependencies needed for the system and R, install the `recoverSummarizeR` package, and automatically execute the `summarize_pipeline()` function with input arguments for `summarize_pipeline()` provided during the build process in the `docker run ...` command.
 
 1.  Add your Synapse personal access token to the environment
 
@@ -67,7 +67,7 @@ docker run \
 
 A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R). For help with Synapse, Synapse APIs, Synapse personal access tokens, etc., please refer to the [Synapse documentation](https://help.synapse.org/docs/).
 
-The environment variables passed to `docker run ...` are the input arguments of `mainflow()`, and as such must be provided in order to use the docker method.
+The environment variables passed to `docker run ...` are the input arguments of `summarize_pipeline()`, and as such must be provided in order to use the docker method.
 
 Variable | Definition | Example
 ---|---|---
@@ -80,13 +80,13 @@ Variable | Definition | Example
 
 ## Quick Start
 
-You can use the package's functions as needed, or, for RECOVER, you can use the `mainflow()` function with just a few arguments to run the entire pipeline intended for summarization and egress of data from MHP to DRC.
+You can use the package's functions as needed, or, for RECOVER, you can use the `summarize_pipeline()` function with just a few arguments to run the entire pipeline intended for summarization and egress of data from MHP to DRC.
 
-Using `mainflow()` allows you to use the built-in pipeline with pre-determined logic, formatting, and output specifications. Use `mainflow()` with caution, as `mainflow()` is a purpose-built function based on a pipeline that is tailored to a specific use case in RECOVER and is not intended for general use.
+Using `summarize_pipeline()` allows you to use the built-in pipeline with pre-determined logic, formatting, and output specifications. Use `summarize_pipeline()` with caution, as `summarize_pipeline()` is a purpose-built function based on a pipeline that is tailored to a specific use case in RECOVER and is not intended for general use.
 
-The flow of the pipeline that `mainflow()` is built on is as follows:
+The flow of the pipeline that `summarize_pipeline()` is built on is as follows:
 
-### `mainflow()` Pipeline
+### `summarize_pipeline()` Pipeline
 
 ```R
 # 1.  Get ontology file (i2b2 concepts map)
