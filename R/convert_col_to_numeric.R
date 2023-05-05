@@ -35,11 +35,13 @@ convert_col_to_numeric <- function(df_list, df_to_avoid = "device", col_to_conve
   if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")
   if (is.logical(df_list)) stop("df_list must be a list of data frames, not a logical object")
   if (length(df_list) < 2) stop("df_list must have more than 1 element")
-  if (!(col_to_convert %in% lapply(df_list, names))) stop("The value of col_to_convert is not found in the column names of any data frames in df_list")
+  if (!any(sapply(df_list, function(x) col_to_convert %in% names(x)))) stop("The value of col_to_convert is not found in the column names of any data frames in df_list")
   
   for (i in seq_along(df_list)) {
     if (!grepl(df_to_avoid, names(df_list)[i])) {
-      df_list[[i]][[col_to_convert]] <- sapply(df_list[[i]][[col_to_convert]], as.numeric)
+      if (col_to_convert %in% names(df_list[[1]])) {
+        df_list[[i]][[col_to_convert]] <- sapply(df_list[[i]][[col_to_convert]], as.numeric)
+      }
     }
   }
   return(df_list)
