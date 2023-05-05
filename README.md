@@ -86,7 +86,7 @@ Using `summarize_pipeline()` allows you to use the built-in pipeline with pre-de
 
 The flow of the pipeline that `summarize_pipeline()` is built on is as follows:
 
-### `summarize_pipeline()` Pipeline
+### `summarize_pipeline()`
 
 ```R
 # 1.  Get ontology file (i2b2 concepts map)
