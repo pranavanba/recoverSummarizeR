@@ -40,3 +40,19 @@ test_that("incorrect input types raise an error", {
                              concept_map = list(df1), 
                              concept_filter_col = list(df1)))
 })
+
+test_that("no concept_replacements input does not raise an error", {
+  first1 <- data.frame(col_a = 1:5, col_b = letters[1:5], col_c = TRUE)
+  second2 <- data.frame(col_b = letters[6:10], col_d = 6:10, col_e = FALSE)
+  df_list <- list(first1, second2)
+  names(df_list) <- c("first1", "second2")
+  concept_map <- data.frame(concept = c("summary:col_a", "summary:col_b", "trigger:col_c"))
+  
+  expect_no_error(diff_concepts(df_list = df_list, concept_map = concept_map, concept_filter_col = "concept"))
+  
+  out <- diff_concepts(df_list = df_list,
+                       concept_map = concept_map,
+                       concept_filter_col = "concept")
+  
+  expect_setequal(out, c("col_c", "col_d", "col_e"))
+})
