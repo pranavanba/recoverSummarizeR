@@ -4,7 +4,12 @@
 \alias{diff_concepts}
 \title{Return the set difference of column names between data frames}
 \usage{
-diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
+diff_concepts(
+  df_list,
+  concept_replacements = NULL,
+  concept_map,
+  concept_filter_col
+)
 }
 \arguments{
 \item{df_list}{A list of data frames.}

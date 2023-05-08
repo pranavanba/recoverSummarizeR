@@ -39,13 +39,15 @@
 #'               concept_replacements = concept_replacements,
 #'               concept_map = concept_map,
 #'               concept_filter_col = "concept")
-diff_concepts <- function(df_list, concept_replacements, concept_map, concept_filter_col) {
-  if (is.data.frame(df_list))stop("df_list must be a list of data frames, not a single data frame")
+diff_concepts <- function(df_list, concept_replacements = NULL, concept_map, concept_filter_col) {
+  if (is.data.frame(df_list)) stop("df_list must be a list of data frames, not a single data frame")
   if (is.character(df_list)) stop("df_list must be a list of data frames, not a character")
   if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")
   if (is.logical(df_list)) stop("df_list must be a list of data frames, not a logical object")
   if (length(df_list) < 2) stop("df_list must have more than 1 element")
-  if (!is.vector(concept_replacements)) stop("concept_replacements must be a vector")
+  if (!is.null(concept_replacements)) {
+    if (!is.vector(concept_replacements)) stop("concept_replacements must be a vector")
+  }
   if (!is.data.frame(concept_map)) stop("concept_map must be a data frame")
   if (!(concept_filter_col %in% names(concept_map))) stop("concept_filter_col must be a column in concept_map")
   
@@ -57,9 +59,15 @@ diff_concepts <- function(df_list, concept_replacements, concept_map, concept_fi
   
   approved_concepts_summarized <- 
     concept_map[[concept_filter_col]] %>%
-    grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>% 
-    stringr::str_extract("(?<=:)[^:]*$") %>% 
-    stringr::str_replace_all(concept_replacements) %>% 
+    grep("^(?=.*summary)(?!.*trigger).+$", ., perl = T, value = T) %>%
+    stringr::str_extract("(?<=:)[^:]*$") %>%
+    {
+      if (!is.null(concept_replacements)) {
+        stringr::str_replace_all(., concept_replacements) 
+      } else {
+        .
+      }
+    } %>%
     unique()
   
   excluded_concepts <- 
