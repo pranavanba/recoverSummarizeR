@@ -12,7 +12,8 @@ diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
 \item{concept_replacements}{A named vector (names must be valid values of \code{concept_filter_col} column of
 \code{concept_map} data frame).}
 
-\item{concept_map}{A data frame (for i2b2/RECOVER purposes, this data frame is the ontology file).}
+\item{concept_map}{A data frame (for i2b2/RECOVER purposes, this data frame is created from the concepts ontology
+file).}
 
 \item{concept_filter_col}{The column of \code{concept_map} that contains "approved concepts" (column names of data frames
 in \code{df_list} that are not to be excluded).}
@@ -22,11 +23,8 @@ A vector of column names from the data frames in \code{df_list} that are not pre
 \code{concept_filter_col} column of \code{concept_map}.
 }
 \description{
-\code{diff_concepts()} takes a list of data frames and a secondary data frame (\code{concept_map}) as input, along with a named
-vector and the name of a column in \code{concept_map}. First, \code{diff_concepts()} replaces various strings in
-\code{concept_filter_col} with the named values in \code{concept_replacements}. Then, it returns a vector of column names that
-are present in the data frames of \code{df_list} and not present in the values of the specified column
-(\code{concept_filter_col}) in \code{concept_map}.
+\code{diff_concepts()} returns the column names of data frames in a list where those names are not values of a specified
+column in an ontology data frame.
 }
 \examples{
 # Create a sample data frame

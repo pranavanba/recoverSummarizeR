@@ -1,15 +1,13 @@
 #' Return the set difference of column names between data frames
 #'
-#' `diff_concepts()` takes a list of data frames and a secondary data frame (`concept_map`) as input, along with a named
-#' vector and the name of a column in `concept_map`. First, `diff_concepts()` replaces various strings in
-#' `concept_filter_col` with the named values in `concept_replacements`. Then, it returns a vector of column names that
-#' are present in the data frames of `df_list` and not present in the values of the specified column
-#' (`concept_filter_col`) in `concept_map`.
+#' `diff_concepts()` returns the column names of data frames in a list where those names are not values of a specified
+#' column in an ontology data frame.
 #'
 #' @param df_list A list of data frames.
 #' @param concept_replacements A named vector (names must be valid values of `concept_filter_col` column of
 #'   `concept_map` data frame).
-#' @param concept_map A data frame (for i2b2/RECOVER purposes, this data frame is the ontology file).
+#' @param concept_map A data frame (for i2b2/RECOVER purposes, this data frame is created from the concepts ontology
+#'   file).
 #' @param concept_filter_col The column of `concept_map` that contains "approved concepts" (column names of data frames
 #'   in `df_list` that are not to be excluded).
 #'
@@ -23,10 +21,10 @@
 #'
 #' # Create another sample data frame
 #' second2 <- data.frame(col_b = letters[6:10], col_d = 6:10, col_e = FALSE)
-#' 
+#'
 #' # Create a list of the data frames
 #' df_list <- list(first1, second2)
-#' 
+#'
 #' # Set the names of the data frames in `df_list`
 #' names(df_list) <- c("first1", "second2")
 #'
