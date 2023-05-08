@@ -1,11 +1,12 @@
-#' Combine data frames with the same name
+#' Combine data frames with identical names
 #'
-#' `combine_duplicate_dfs()` takes a list of data frames as input and combines data frames with identical names in the
-#' list into unified data frame under the same name. Partitioned files that are read into data frames will have
-#' identical names, so `combine_duplicate_dfs()` essentially de-partitions those data.
+#' `unify_dfs()` combines data frames with the same name in a list into a unified data frame. This function
+#' is especially useful when working with large data sets, where duplicate data frames can be generated from partitioned
+#' files; i.e., partitioned files that are read into data frames can have identical names, so `unify_dfs()`
+#' essentially de-partitions those data.
 #'
 #' @param df_list A list of data frames.
-#' @returns A list of data frames whose length is shorter than that of the input list.
+#' @returns A list of data frames with unique names. The output list will be shorter than the input list.
 #'
 #'   The length of the output list can be determined by `n - d + u`, where `n` is the length of the original list, `d`
 #'   is the number of duplicate names in the list, and `u` is the number of unique duplicate names in the list.
@@ -19,10 +20,10 @@
 #' names(df_list) <- c("df1", "df2", "df1", "df3", "df4", "df2")
 #'
 #' # Combine the data frames
-#' combined_df_list <- combine_duplicate_dfs(df_list)
+#' combined_df_list <- unify_dfs(df_list)
 #' head(combined_df_list)
 #' @export
-combine_duplicate_dfs <- function(df_list) {
+unify_dfs <- function(df_list) {
   if (is.data.frame(df_list))stop("df_list must be a list of data frames, not a single data frame")
   if (is.character(df_list)) stop("df_list must be a list of data frames, not a character")
   if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")

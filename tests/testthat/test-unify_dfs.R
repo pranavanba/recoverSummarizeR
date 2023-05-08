@@ -5,7 +5,7 @@ test_that("combining data frames works", {
   df4 <- data.frame(x = 10:12, y = letters[10:12])
   df_list <- list(df1, df2, df1, df3, df4, df2)
   names(df_list) <- c("df1", "df2", "df1", "df3", "df4", "df2")
-  combined_df_list <- combine_duplicate_dfs(df_list)
+  combined_df_list <- unify_dfs(df_list)
   
   expect_equal(combined_df_list$df1, df1 %>% dplyr::bind_rows(df1))
   expect_equal(combined_df_list$df2, df2 %>% dplyr::bind_rows(df2))
@@ -21,7 +21,7 @@ test_that("length of output is correct", {
   df4 <- data.frame(x = 10:12, y = letters[10:12])
   df_list <- list(df1, df2, df1, df3, df4, df2)
   names(df_list) <- c("df1", "df2", "df1", "df3", "df4", "df2")
-  combined_df_list <- combine_duplicate_dfs(df_list)
+  combined_df_list <- unify_dfs(df_list)
   
   n <- length(names(df_list))
   d <- sum(names(df_list) == names(df_list)[duplicated(names(df_list))])
@@ -40,9 +40,9 @@ test_that("non-list input raises an error", {
                     a = 4:6, c = letters[4:6],
                     d = 7:9, b = letters[7:9])  
   
-  expect_error(combine_duplicate_dfs(df1))
-  expect_error(combine_duplicate_dfs(list(second)))
-  expect_error(combine_duplicate_dfs("df1"))
-  expect_error(combine_duplicate_dfs(1))
-  expect_error(combine_duplicate_dfs(NA))
+  expect_error(unify_dfs(df1))
+  expect_error(unify_dfs(list(second)))
+  expect_error(unify_dfs("df1"))
+  expect_error(unify_dfs(1))
+  expect_error(unify_dfs(NA))
 })
