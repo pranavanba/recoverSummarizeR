@@ -1,9 +1,7 @@
-#' Convert a specific column of specific data frames to numeric type
+#' Convert specified column to numeric type in selected data frames
 #'
-#' @description `convert_col_to_numeric()` takes a list of data frames, a string denoting the full or partial name of a
-#'   data frame, and a column name as input, then converts all instances of the specified column (`col_to_convert`) in
-#'   the data frames in `df_list` to numeric type, except in the data frames whose names contain the string specified by
-#'   `df_to_avoid`.
+#' @description `convert_col_to_numeric()` converts a specified column to numeric type in all data frames in a given
+#'   list, except in the data frames whose names contain a string specified by the user.
 #'
 #' @param df_list A list of data frames.
 #' @param df_to_avoid A string denoting the full or partial name of a data frame in `df_list`.
@@ -22,7 +20,7 @@
 #'
 #' my_dfs <- convert_col_to_numeric(my_dfs)
 #'
-#' # Example 2: Convert "my_col" column in all data frames of 
+#' # Example 2: Convert "my_col" column in all data frames of
 #' # my_list to numeric type, except in "exclude_df"
 #' my_list <- list(df1 = data.frame(my_col = c("1", "2", "3")),
 #'                 df2 = data.frame(my_col = c("4", "5", "6")),
