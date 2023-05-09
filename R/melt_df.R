@@ -1,16 +1,14 @@
-#'Melt specific columns of a data frame
+#'Reshape selected columns from wide to long format
 #'
-#'@description `melt_df()` takes a data frame and a vector as input, and reshapes only the specified columns of the data
-#'frame from wide to long format. While keeping the columns whose names are in the "excluded concepts" vector untouched,
-#'`melt_df()` reshapes only the remaining columns of `df`.
-#'
-#'The resulting data frame has a "concept" column containing the melted column names (those that are not found in
-#'`excluded concepts`), and a "value" column containing the values of those melted columns.
+#'`melt_df()` reshapes specific columns of a given data frame from wide to long format. The "excluded concepts" vector
+#'allows users to specify which columns should be excluded from this reshaping.
 #'
 #'@param df A data frame.
 #'@param excluded_concepts A vector of column names to not melt.
 #'
-#'@return A data frame of the same type as `df` but different shape.
+#'@return A data frame of the same type as `df` but different shape. The resulting data frame has two new columns:
+#'  "concept," which contains the names of the melted columns, and "value," which contains the values of those melted
+#'  columns. `melt_df()` does not modify the excluded columns and only reshapes the remaining columns.
 #'@export
 #'
 #' @examples

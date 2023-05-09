@@ -2,7 +2,7 @@
 % Please edit documentation in R/melt_df.R
 \name{melt_df}
 \alias{melt_df}
-\title{Melt specific columns of a data frame}
+\title{Reshape selected columns from wide to long format}
 \usage{
 melt_df(df, excluded_concepts = "")
 }
@@ -12,15 +12,13 @@ melt_df(df, excluded_concepts = "")
 \item{excluded_concepts}{A vector of column names to not melt.}
 }
 \value{
-A data frame of the same type as \code{df} but different shape.
+A data frame of the same type as \code{df} but different shape. The resulting data frame has two new columns:
+"concept," which contains the names of the melted columns, and "value," which contains the values of those melted
+columns. \code{melt_df()} does not modify the excluded columns and only reshapes the remaining columns.
 }
 \description{
-\code{melt_df()} takes a data frame and a vector as input, and reshapes only the specified columns of the data
-frame from wide to long format. While keeping the columns whose names are in the "excluded concepts" vector untouched,
-\code{melt_df()} reshapes only the remaining columns of \code{df}.
-
-The resulting data frame has a "concept" column containing the melted column names (those that are not found in
-\verb{excluded concepts}), and a "value" column containing the values of those melted columns.
+\code{melt_df()} reshapes specific columns of a given data frame from wide to long format. The "excluded concepts" vector
+allows users to specify which columns should be excluded from this reshaping.
 }
 \examples{
 #' # Example 1: Melt all columns except "Species" of the "iris" dataset
