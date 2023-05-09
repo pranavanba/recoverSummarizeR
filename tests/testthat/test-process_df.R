@@ -56,3 +56,19 @@ test_that("incorrect input types raise an error", {
                           concept_map_concepts = "concept_cd", 
                           concept_map_units = "UNITS_COL"))
 })
+
+test_that("not providing concept_replacements_reversed raises no error", {
+  df <- data.frame(participantidentifier = c(1, 2, 3, 4),
+                   startdate = c("2022-01-01", "2022-01-01", "2022-01-02", "2022-01-03"),
+                   enddate = c("2022-01-03", "2022-01-02", "2022-01-03", "2022-01-04"),
+                   concept = c("summary:BLOOD_PRESSURE_SYSTOLIC", "summary:BLOOD_PRESSURE_DIASTOLIC",
+                               "summary:HEART_RATE", "summary:RESPIRATORY_RATE"),
+                   value = c(120, 80, 70, 20))
+  concept_map <- data.frame(concept_cd = c("summary:BLOOD_PRESSURE_SYSTOLIC", "summary:BLOOD_PRESSURE_DIASTOLIC",
+                                           "summary:HEART_RATE", "summary:RESPIRATORY_RATE"),
+                            valtype_cd = c("N", "N", "N", "N"),
+                            UNITS_CD = c("mmHg", "mmHg", "beats/min", "breaths/min"))
+  
+  expect_no_error(process_df(df = df, concept_map = concept_map,
+                             concept_map_concepts = "concept_cd", concept_map_units = "UNITS_CD"))
+})

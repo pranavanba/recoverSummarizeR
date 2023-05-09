@@ -7,7 +7,7 @@
 process_df(
   df,
   concept_map,
-  concept_replacements_reversed,
+  concept_replacements_reversed = NULL,
   concept_map_concepts = "concept_cd",
   concept_map_units = "UNITS_CD"
 )
