@@ -2,7 +2,7 @@
 % Please edit documentation in R/process_df.R
 \name{process_df}
 \alias{process_df}
-\title{Process a data frame with concept mappings}
+\title{Modify data frame using i2b2/RECOVER concept mappings}
 \usage{
 process_df(
   df,
@@ -15,7 +15,8 @@ process_df(
 \arguments{
 \item{df}{A data frame with \code{participantidentifier}, \code{startdate}, \code{enddate}, \code{concept}, and \code{value} columns.}
 
-\item{concept_map}{A data frame (for i2b2/RECOVER purposes, this data frame is the ontology file).}
+\item{concept_map}{A data frame (for i2b2/RECOVER purposes, this data frame is created from the concepts ontology
+file).}
 
 \item{concept_replacements_reversed}{A lowercase named vector that can be created using
 \code{\link{reverse_str_pairs}}; names must be valid values of \code{df$concept}, and values must contain the original
@@ -23,18 +24,22 @@ names from the \code{concept_replacements} named vector used for \code{\link{dif
 
 \item{concept_map_concepts}{The name of the column in \code{concept_map} that is the equivalent of \code{df$concept}.}
 
-\item{concept_map_units}{The name of the column in \code{concept_map} containing values/info for the units of each value
+\item{concept_map_units}{The name of the column in \code{concept_map} that contains descriptions of the units for values
 in \code{df$concept}.}
 }
 \value{
-A data frame with a different shape than that of \code{df}.
+A data frame with a different shape than that of \code{df}. The output data frame will have new columns:
+\itemize{
+\item \strong{\code{valtype_cd}}: Either \code{N} or \code{T} depending on whether \code{class(value)} is \code{numeric} or \code{character}
+\item \strong{\code{nval_num}}: Populated with all numeric values (where \code{valtype_cd} is \code{N})
+\item \strong{\code{tval_char}}: Populated with all character values (where \code{valtype_cd} is \code{T})
+\item \strong{\code{UNITS_CD}}: The values of \code{concept_map$concept_map_units} joined by \code{df$concept} and \code{concept_map$concept_map_concepts}
+}
 }
 \description{
-\code{process_df()} takes a primary data frame (\code{df}), a secondary data frame (\code{concept_map}), and named
-vector as inputs. First, the modifications made to the strings in the \code{concept_filter_col} column in \code{concept_map} by
-passing \code{concept_replacements} to \code{\link{diff_concepts}} are reversed using the \code{name = value} pairs from
-\code{concept_replacements_reversed}. Then, various columns are added to \code{df}, and the modified data frame is returned. An
-error is raised if a specific set of columns are not found in \code{df}.
+\code{process_df()}  is a RECOVER-specific function which processes and adds specific columns to a data
+frame. An error is raised if any of the main RECOVER columns (\code{participantidentifier}, \code{startdate}, \code{enddate},
+\code{concept}, \code{value}) are not found in the input data frame.
 }
 \examples{
 # Create a sample data frame

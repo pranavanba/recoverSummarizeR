@@ -1,21 +1,26 @@
-#' Process a data frame with concept mappings
+#' Modify data frame using i2b2/RECOVER concept mappings
 #'
-#' @description `process_df()` takes a primary data frame (`df`), a secondary data frame (`concept_map`), and named
-#' vector as inputs. First, the modifications made to the strings in the `concept_filter_col` column in `concept_map` by
-#' passing `concept_replacements` to \code{\link{diff_concepts}} are reversed using the `name = value` pairs from
-#' `concept_replacements_reversed`. Then, various columns are added to `df`, and the modified data frame is returned. An
-#' error is raised if a specific set of columns are not found in `df`.
+#' @description `process_df()`  is a RECOVER-specific function which processes and adds specific columns to a data
+#'   frame. An error is raised if any of the main RECOVER columns (`participantidentifier`, `startdate`, `enddate`,
+#'   `concept`, `value`) are not found in the input data frame.
 #'
 #' @param df A data frame with `participantidentifier`, `startdate`, `enddate`, `concept`, and `value` columns.
-#' @param concept_map A data frame (for i2b2/RECOVER purposes, this data frame is the ontology file).
+#' @param concept_map A data frame (for i2b2/RECOVER purposes, this data frame is created from the concepts ontology
+#'   file).
 #' @param concept_replacements_reversed A lowercase named vector that can be created using
 #'   \code{\link{reverse_str_pairs}}; names must be valid values of `df$concept`, and values must contain the original
 #'   names from the `concept_replacements` named vector used for \code{\link{diff_concepts}}
 #' @param concept_map_concepts The name of the column in `concept_map` that is the equivalent of `df$concept`.
-#' @param concept_map_units The name of the column in `concept_map` containing values/info for the units of each value
+#' @param concept_map_units The name of the column in `concept_map` that contains descriptions of the units for values
 #'   in `df$concept`.
 #'
-#' @return A data frame with a different shape than that of `df`.
+#' @return A data frame with a different shape than that of `df`. The output data frame will have new columns:
+#' \itemize{
+#'    \item \strong{`valtype_cd`}: Either `N` or `T` depending on whether `class(value)` is `numeric` or `character`
+#'    \item \strong{`nval_num`}: Populated with all numeric values (where `valtype_cd` is `N`)
+#'    \item \strong{`tval_char`}: Populated with all character values (where `valtype_cd` is `T`)
+#'    \item \strong{`UNITS_CD`}: The values of `concept_map$concept_map_units` joined by `df$concept` and `concept_map$concept_map_concepts`
+#' }
 #' @export
 #'
 #' @examples
