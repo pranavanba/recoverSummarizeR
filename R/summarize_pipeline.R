@@ -3,7 +3,7 @@
 #' @param ontologyFileID A Synapse ID for a CSV file stored in Synapse. For RECOVER, this file is the i2b2 concepts map.
 #' @param parquetDirID A Synapse ID for a folder entity in Synapse where the data is stored. For RECOVER, this would be
 #'   the folder housing the post-ETL parquet data.
-#' @inheritParams get_concept_map
+#' @inheritParams syn_file_to_df
 #' @inheritParams synget_parquet_to_df
 #' @inheritParams diff_concepts
 #' @inheritParams store_in_syn
@@ -31,12 +31,12 @@
 #'                    synFolderID = synFolderID)
 #' }
 summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID) {
-  concept_map <- get_concept_map(ontologyFileID)
+  concept_map <- syn_file_to_df(ontologyFileID)
   
   df_list_original <- synget_parquet_to_df(parquetDirID, dataset_name_filter)
   
   df_list_unified_tmp <- 
-    combine_duplicate_dfs(df_list_original) %>% 
+    unify_dfs(df_list_original) %>% 
     lapply(function(x) {
       names(x) <- tolower(names(x))
       return(x)})
