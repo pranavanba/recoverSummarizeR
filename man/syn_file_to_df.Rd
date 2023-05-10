@@ -4,10 +4,12 @@
 \alias{syn_file_to_df}
 \title{Fetch a Synapse file and store in data frame}
 \usage{
-syn_file_to_df(synID, cols = "concept_cd")
+syn_file_to_df(synID, cols = NULL)
 }
 \arguments{
 \item{synID}{A Synapse ID for a file in Synapse.}
+
+\item{cols}{Names of one or more columns to convert to lowercase.}
 }
 \value{
 A data frame containing a representation of the data in the file. The values in the columns specified by
