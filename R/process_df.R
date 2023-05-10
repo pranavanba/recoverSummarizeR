@@ -8,7 +8,7 @@
 #' @param concept_map A data frame (for i2b2/RECOVER purposes, this data frame is created from the concepts ontology
 #'   file).
 #' @param concept_replacements_reversed A lowercase named vector that can be created using
-#'   \code{\link{reverse_str_pairs}}; names must be valid values of `df$concept`, and values must contain the original
+#'   \code{\link{vec_reverse}}; names must be valid values of `df$concept`, and values must contain the original
 #'   names from the `concept_replacements` named vector used for \code{\link{diff_concepts}}
 #' @param concept_map_concepts The name of the column in `concept_map` that is the equivalent of `df$concept`.
 #' @param concept_map_units The name of the column in `concept_map` that contains descriptions of the units for values
@@ -44,7 +44,7 @@
 #' concept_replacements <- c("bp" = "blood_pressure", "hr" = "heart_rate", "rr" = "respiratory_rate")
 #'
 #' # Create a reversed named vector of concept replacements
-#' concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
+#' concept_replacements_reversed <- vec_reverse(concept_replacements)
 #' print(concept_replacements_reversed)
 #'
 #' # Process the data frame

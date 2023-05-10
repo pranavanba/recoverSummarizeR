@@ -6,7 +6,7 @@ test_that("function works", {
 test_that("incorrect input types raise an error", {
   fruit_colors <- data.frame(fruit = c("apple", "banana", "cherry", "kiwi", "lemon"),
                              color = c("red", "yellow", "red", "brown", "yellow"))
-  expect_error(reverse_str_pairs(fruit_colors))
-  expect_error(reverse_str_pairs(1, 2))
-  expect_error(reverse_str_pairs(1))
+  expect_error(vec_reverse(fruit_colors))
+  expect_error(vec_reverse(1, 2))
+  expect_error(vec_reverse(1))
 })
