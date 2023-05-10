@@ -4,7 +4,7 @@
 \alias{syn_dir_to_dflist}
 \title{Recursively download Synapse files/folders}
 \usage{
-syn_dir_to_dflist(synDirID, dataset_name_filter)
+syn_dir_to_dflist(synDirID, dataset_name_filter = NULL)
 }
 \arguments{
 \item{synDirID}{A Synapse ID for a folder entity in Synapse.}
