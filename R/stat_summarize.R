@@ -1,12 +1,15 @@
-#' Summarize data in a data frame for i2b2/RECOVER
+#' Summarize data for i2b2/RECOVER
 #'
-#' `stat_summarize()` takes a data frame as input and summarizes the data in the data frame on specific time scales
-#' (weekly and all-time) for the following statistics: 5/95 percentiles, mean, median, variance, number of records.
+#' `stat_summarize()` summarizes the data in a data frame on specific time scales (all data and weekly) for the
+#' following statistics: 5/95 percentiles, mean, median, variance, number of records.
 #'
 #' @param df A data frame with `participantidentifier`, `concept`, `value`, and some combination of `startdate`,
 #'   `enddate`, `date`, and `datetime` columns.
 #'
-#' @return A data frame that differs in size from `df`.
+#' @return A data frame that differs in size from `df`. The original `value` column is dropped and replaced by a new
+#'   `value` column containing the values of each summary statistic computed for each group of data (group by
+#'   `participantidentifier` and `concept` for all data, and `participantidentifier`, `concept`, `year`, `week` for
+#'   weekly summaries).
 #' @export
 #'
 #' @examples
@@ -17,7 +20,8 @@
 #'                           "2022-01-11", "2022-02-01", "2022-02-06", "2022-02-11"),
 #'                  concept = c("weight", "weight", "weight", "weight", "weight", "weight",
 #'                              "height", "height", "height", "height", "height", "height"),
-#'                              value = c(60, 62, 64, 65, 66, 68, 160, 162, 164, 165, 166, 168))
+#'                  value = c(60, 62, 64, 65, 66, 68, 160, 162, 164, 165, 166, 168))
+#'
 #' # Summarize the data
 #' stat_summarize(df)
 stat_summarize <- function(df) {
