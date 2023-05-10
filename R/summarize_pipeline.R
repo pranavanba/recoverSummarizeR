@@ -31,7 +31,7 @@
 #'                    synFolderID = synFolderID)
 #' }
 summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID) {
-  concept_map <- syn_file_to_df(ontologyFileID)
+  concept_map <- syn_file_to_df(ontologyFileID, "concept_cd")
   
   df_list_original <- syn_dir_to_dflist(parquetDirID, dataset_name_filter)
   

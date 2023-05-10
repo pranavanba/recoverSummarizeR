@@ -5,6 +5,8 @@
 #' concept map (ontology) file from Synapse then read it into a data frame.
 #'
 #' @param synID A Synapse ID for a file in Synapse.
+#' @param cols Names of one or more columns to convert to lowercase.
+#'
 #' @returns A data frame containing a representation of the data in the file. The values in the columns specified by
 #'   `cols` are converted to lowercase. For i2b2/RECOVER, the default has been set to `concept_cd`.
 #' @export
@@ -13,7 +15,7 @@
 #' df <- syn_file_to_df("syn12345678")
 #' }
 #' 
-syn_file_to_df <- function(synID, cols = "concept_cd") {
+syn_file_to_df <- function(synID, cols = NULL) {
   df <- 
     synapser::synGet(synID) %>% 
     {
