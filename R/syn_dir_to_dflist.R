@@ -1,24 +1,22 @@
 #' Recursively download Synapse files/folders
 #'
-#' `synget_parquet_to_df()` recursively downloads files (and maintains the original folder structure) from a Synapse
-#' directory, reads in the specific types of files it finds (.parquet, .tsv, .csv, .ndjson), and returns a list of data
-#' frames. It then removes file extensions and unnecessary prefixes/suffixes from the names of the data frames and
-#' filters the list of data frames to include only those data frames contain the string specified by `dataset_name_filter` in
-#' their name.
+#' `syn_dir_to_dflist()` recursively downloads files from a Synapse directory and maintains the original directory
+#' structure, reads the dataset/directory files to data frames, and stores the data frames in a list.
 #'
 #' @param synDirID A Synapse ID for a folder entity in Synapse.
-#' @param dataset_name_filter A string found in the names of the files to be read for use in including only the files that
-#'   contain said string in their names.
+#' @param dataset_name_filter A string used to filter the list of data frames by including only the data frames whose
+#'   names contain the specified string.
 #'
-#' @return A list of data frames whose names contain the string specified by `dataset_name_filter`
+#' @return A list of data frames. The list is filtered to include only the data frames whose names contain the string
+#'   specified by `dataset_name_filter`.
 #' @export
 #' @examples
 #' \dontrun{
 #' parquetDirectoryID <- "syn12345678"
-#' df_list <- synget_parquet_to_df(parquetDirectoryID, "fitbit")
-#' # df_list will contain only data frames whose names contain the string "fitbit"
+#' df_list <- syn_dir_to_dflist(parquetDirectoryID, "fitbit")
+#' # df_list will contain only data frames with names containing the string "fitbit"
 #' }
-synget_parquet_to_df <- function(synDirID, dataset_name_filter) {
+syn_dir_to_dflist <- function(synDirID, dataset_name_filter) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)

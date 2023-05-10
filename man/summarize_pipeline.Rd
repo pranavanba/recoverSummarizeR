@@ -19,8 +19,8 @@ summarize_pipeline(
 \item{parquetDirID}{A Synapse ID for a folder entity in Synapse where the data is stored. For RECOVER, this would be
 the folder housing the post-ETL parquet data.}
 
-\item{dataset_name_filter}{A string found in the names of the files to be read for use in including only the files that
-contain said string in their names.}
+\item{dataset_name_filter}{A string used to filter the list of data frames by including only the data frames whose
+names contain the specified string.}
 
 \item{concept_replacements}{A named vector (names must be valid values of \code{concept_filter_col} column of
 \code{concept_map} data frame).}
