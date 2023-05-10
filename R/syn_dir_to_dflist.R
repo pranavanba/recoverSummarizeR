@@ -16,7 +16,7 @@
 #' df_list <- syn_dir_to_dflist(parquetDirectoryID, "fitbit")
 #' # df_list will contain only data frames with names containing the string "fitbit"
 #' }
-syn_dir_to_dflist <- function(synDirID, dataset_name_filter) {
+syn_dir_to_dflist <- function(synDirID, dataset_name_filter=NULL) {
   system(paste("synapse get -r", synDirID))
   
   file_paths <- list.files(recursive = T, full.names = T)
@@ -41,7 +41,11 @@ syn_dir_to_dflist <- function(synDirID, dataset_name_filter) {
     {paste(basename(dirname(.)), "-", basename(.))} %>% 
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
   
-  df_list <- df_list[grepl(dataset_name_filter, tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  if (!is.null(dataset_name_filter)) {
+    pattern <- paste(dataset_name_filter, collapse="|")
+    df_list <- df_list[grepl(tolower(pattern), tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
+  }
+  
   
   return(df_list)
 }
