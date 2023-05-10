@@ -48,7 +48,7 @@ summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter
       return(df)
     })
   
-  concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
+  concept_replacements_reversed <- vec_reverse(concept_replacements)
   
   excluded_concepts <- diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
   
