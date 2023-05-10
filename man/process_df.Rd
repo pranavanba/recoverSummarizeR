@@ -19,7 +19,7 @@ process_df(
 file).}
 
 \item{concept_replacements_reversed}{A lowercase named vector that can be created using
-\code{\link{reverse_str_pairs}}; names must be valid values of \code{df$concept}, and values must contain the original
+\code{\link{vec_reverse}}; names must be valid values of \code{df$concept}, and values must contain the original
 names from the \code{concept_replacements} named vector used for \code{\link{diff_concepts}}}
 
 \item{concept_map_concepts}{The name of the column in \code{concept_map} that is the equivalent of \code{df$concept}.}
@@ -62,7 +62,7 @@ print(concept_map)
 concept_replacements <- c("bp" = "blood_pressure", "hr" = "heart_rate", "rr" = "respiratory_rate")
 
 # Create a reversed named vector of concept replacements
-concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
+concept_replacements_reversed <- vec_reverse(concept_replacements)
 print(concept_replacements_reversed)
 
 # Process the data frame

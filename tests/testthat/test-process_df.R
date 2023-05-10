@@ -10,7 +10,7 @@ test_that("function works correctly", {
                             valtype_cd = c("N", "N", "N", "N"),
                             UNITS_CD = c("mmHg", "mmHg", "beats/min", "breaths/min"))
   concept_replacements <- c("bp" = "blood_pressure", "hr" = "heart_rate", "rr" = "respiratory_rate")
-  concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
+  concept_replacements_reversed <- vec_reverse(concept_replacements)
   df_processed <- process_df(df, concept_map, concept_replacements_reversed, "concept_cd", "UNITS_CD")
   
   expect_no_error(process_df(df, concept_map, concept_replacements_reversed, "concept_cd", "UNITS_CD"))
@@ -28,7 +28,7 @@ test_that("incorrect input types raise an error", {
                             valtype_cd = c("N", "N", "N", "N"),
                             UNITS_CD = c("mmHg", "mmHg", "beats/min", "breaths/min"))
   concept_replacements <- c("bp" = "blood_pressure", "hr" = "heart_rate", "rr" = "respiratory_rate")
-  concept_replacements_reversed <- reverse_str_pairs(concept_replacements)
+  concept_replacements_reversed <- vec_reverse(concept_replacements)
   
   expect_error(process_df(df = "a", 
                           concept_map = concept_map, 
