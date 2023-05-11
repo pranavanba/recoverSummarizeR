@@ -2,10 +2,10 @@ Package: recoverSummarizeR
 Title: Functions for handling and summarizing data primarily for RECOVER
 Version: 0.0.0.9000
 Authors@R: c(
-    person("Pranav", "Anbarasu", , "pranav.anbarasu@sagebase.org", role = c("aut", "cre")),
+    person("Pranav", "Anbarasu", , "pranavanba@gmail.com", role = c("aut", "cre")),
     person("Sage Bionetworks", role = "cph")
   )
-Maintainer: Pranav Anbarasu <pranav.anbarasu@sagebase.org>
+Maintainer: Pranav Anbarasu <pranavanba@gmail.com>
 Description: Provides functions for fetching data from and writing data to
     Synapse, as well as processing and summarizing data.
 License: Apache License (>= 2)
