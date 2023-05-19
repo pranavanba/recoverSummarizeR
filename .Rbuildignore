@@ -8,3 +8,4 @@
 misc
 output_concepts.csv
 concepts_map.csv
+^\.github$
