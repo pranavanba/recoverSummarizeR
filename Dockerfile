@@ -7,7 +7,7 @@ RUN apt-get update -y && \
 RUN Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
 RUN Rscript -e 'install.packages("devtools")'
 RUN Rscript -e 'require(devtools)'
-RUN Rscript -e 'devtools::install_github("Sage-Bionetworks/recoverSummarizeR", ref = "release")'
+RUN Rscript -e 'devtools::install_github("Sage-Bionetworks/recoverSummarizeR")'
 
 CMD ["sh", "-c", "Rscript -e 'library(recoverSummarizeR); \
                       synapser::synLogin(); \
