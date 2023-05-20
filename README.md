@@ -29,7 +29,7 @@ devtools::install_github("Sage-Bionetworks/recoverSummarizeR")
 
 ### Docker Container
 
-For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/users/pranavanba/packages/container/package/recoversummarizer).
+For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/orgs/Sage-Bionetworks/packages/container/package/recoversummarizer).
 
 The primary purpose of using the Docker method, in the context of this package, is that the docker image published from this repo contains instructions to:
 
