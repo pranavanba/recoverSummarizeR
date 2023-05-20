@@ -1,6 +1,6 @@
 ## recoverSummarizeR
 
-[![GitHub R package version](https://img.shields.io/github/r-package/v/pranavanba/recoversummarizer?label=recoverSummarizeR)](DESCRIPTION)
+[![GitHub R package version](https://img.shields.io/github/r-package/v/pranavanba/recoversummarizer?label=R%20Package%20Version)](DESCRIPTION)
 [![GitHub](https://img.shields.io/github/license/pranavanba/recoversummarizer)](LICENSE.md)
 [![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/pranavanba/recoversummarizer/docker-build-publish.yaml?branch=main&label=docker-build-publish&logo=github%20actions&logoColor=white)](https://github.com/pranavanba/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
 
