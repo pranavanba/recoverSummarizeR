@@ -1,25 +1,43 @@
 ## recoverSummarizeR
 
+[![GitHub R package version](https://img.shields.io/github/r-package/v/pranavanba/recoversummarizer?label=recoverSummarizeR)](DESCRIPTION)
+[![GitHub](https://img.shields.io/github/license/pranavanba/recoversummarizer)](LICENSE.md)
+[![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/pranavanba/recoversummarizer/docker-build-publish.yaml?branch=main&label=docker-build-publish&logo=github%20actions&logoColor=white)](https://github.com/pranavanba/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
+
 This package provides functions to help with fetching data from Synapse, as well as processing, summarizing, formatting the data, and storing any output in Synapse. While this package is mainly intended for use in RECOVER, some functions in the package can be used outside this context and for general and other specific use cases.
 
 ## Requirements
 
--   R >= 4.0.0 (local, rocker image, etc.)
--   Synapse account with relevant access permissions (for help with Synapse please refer to the [Synapse documentation](https://help.synapse.org/docs/))
--   Synapse personal access token
+-   R >= v4.0.0
+-   Synapse account with relevant access permissions
+-   Synapse authentication token
 
-## Installation
+A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R). For help with Synapse, Synapse APIs, Synapse authentication tokens, etc., please refer to the [Synapse documentation](https://help.synapse.org/docs/).
+
+## Installation and Usage
+
+There are two methods to install and use this package: as a **standalone package** or **Docker container**. Please refer to the [Standalone Package](#standalone-package) and [Docker Container](#docker-container) sections for their respective installation and usage instructions.
+
+### Standalone Package
 
 Currently, `recoverSummarizeR` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
 
 ```R
 install.packages("devtools")
-devtools::install_github("Sage-Bionetworks/recoverSummarizeR", ref = "release")
+devtools::install_github("Sage-Bionetworks/recoverSummarizeR")
 ```
 
-## Docker
+### Docker Container
 
-There are two methods to install and use this package: yourself or Docker. The primary purpose of using the Docker method, in the context of this package, is that the Dockerfile in this repo contains instructions to create an environment with all dependencies needed for the system and R, install the `recoverSummarizeR` package, and automatically execute the `summarize_pipeline()` function with input arguments for `summarize_pipeline()` provided during the build process in the `docker run ...` command.
+For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/users/pranavanba/packages/container/package/recoversummarizer).
+
+The primary purpose of using the Docker method, in the context of this package, is that the docker image published from this repo contains instructions to:
+
+1. Create an environment with all of the dependencies needed for the system and R
+2. Install the `recoverSummarizeR` package
+3. Automatically execute the `summarize_pipeline()` function with input arguments for `summarize_pipeline()` provided as environment variables during the run process in the `docker run ...` command using the `-e` flag
+
+#### Use the pre-built Docker image
 
 1.  Add your Synapse personal access token to the environment
 
@@ -39,7 +57,52 @@ export SYNAPSE_AUTH_TOKEN
 source ~/.bash_profile
 ```
 
-2.  Build the docker image
+2.  Pull the docker image
+
+```Shell
+docker pull ghcr.io/pranavanba/recoversummarizer:main
+```
+
+3.  Run the docker container
+
+```Shell
+docker run \
+  --name <container-name> \
+  -e SYNAPSE_AUTH_TOKEN=$SYNAPSE_AUTH_TOKEN \
+  -e ONTOLOGY_FILE_ID=<synapseID> \
+  -e PARQUET_DIR_ID=<synapseID> \
+  -e DATASET_NAME_FILTER=<string> \
+  -e CONCEPT_REPLACEMENTS=<named-vector-in-parentheses> \
+  -e CONCEPT_FILTER_COL=<concept-map-column-name> \
+  -e SYN_FOLDER_ID=<synapseID> \
+  ghcr.io/pranavanba/recoversummarizer:main
+```
+
+For an explanation of the various environment variables required in the `docker run` command, please see [Environment Variables](#environment-variables).
+
+#### Build the Docker image yourself
+
+1.  Add your Synapse personal access token to the environment
+
+```Shell
+# Option 1: For only the current shell session:
+export SYNAPSE_AUTH_TOKEN=<your-token>
+
+# Option 2: For all future shell sessions (modify your shell profile)
+# Open the profile file
+nano ~/.bash_profile
+
+# Append the following
+SYNAPSE_AUTH_TOKEN=<your-token>
+export SYNAPSE_AUTH_TOKEN
+
+# Save the file
+source ~/.bash_profile
+```
+
+2. Clone this repo
+
+3.  Build the docker image
 
 ```Shell
 # Option 1: From the directory containing the Dockerfile
@@ -50,7 +113,7 @@ docker build <optional-arguments> -t <image-name> .
 docker build <optional-arguments> -t <image-name> -f <path-to-Dockerfile> .
 ```
 
-3.  Run the docker container
+4.  Run the docker container
 
 ```Shell
 docker run \
@@ -65,7 +128,9 @@ docker run \
   <docker-image-name>
 ```
 
-A Synapse authentication token is required for use of the Synapse APIs (e.g. the `synapser` package for R). For help with Synapse, Synapse APIs, Synapse personal access tokens, etc., please refer to the [Synapse documentation](https://help.synapse.org/docs/).
+For an explanation of the various environment variables required in the `docker run` command, please see [Environment Variables](#environment-variables).
+
+#### Environment Variables
 
 The environment variables passed to `docker run ...` are the input arguments of `summarize_pipeline()`, and as such must be provided in order to use the docker method.
 
@@ -89,38 +154,38 @@ The flow of the pipeline that `summarize_pipeline()` is built on is as follows:
 ### `summarize_pipeline()`
 
 ```R
-# 1.  Get ontology file (i2b2 concepts map)
+# Get ontology file (i2b2 concepts map)
 get_concept_map(synID)
 
-# 2.  Read data files to data frames
+# Read data files to data frames
 
-    # A.  Get post-ETL data files
-    synget_parquet_to_df(synDirID, dataset_name_filter)
+# Get post-ETL data files
+synget_parquet_to_df(synDirID, dataset_name_filter)
 
-    # B.  Combine partitioned (multi-part) datasets
-    combine_duplicate_dfs(df_list)
+# Combine partitioned (multi-part) datasets
+combine_duplicate_dfs(df_list)
 
-# 3.  Process and transform the data
+# Process and transform the data
 
-    # A.  Get the excluded (non-approved) i2b2 summary concepts
-    diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
+# Get the excluded (non-approved) i2b2 summary concepts
+diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
 
-    # B.  Reshape the data frames that have the relevant data
-    melt_df(df, excluded_concepts)
+# Reshape the data frames that have the relevant data
+melt_df(df, excluded_concepts)
 
-    # C.  Convert the `value` column of relevant data frames to `numeric` type
-    convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
+# Convert the `value` column of relevant data frames to `numeric` type
+convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
 
-# 4.  Summarize the relevant data
+# Summarize the relevant data
 stat_summarize(df)
 
-# 5.  Process and transform the output into the desired format for i2b2
+# Process and transform the output into the desired format for i2b2
 process_df(df, concept_map, concept_replacements_reversed, concept_map_concepts, concept_map_units)
 
-# 6.  Write the output data frames to CSV files
+# Write the output data frames to CSV files
 write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
 write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
 
-# 7.  Store the output in Synapse
+# Store the output in Synapse
 store_in_syn(synFolderID, filepath, used_param, executed_param)
 ```
