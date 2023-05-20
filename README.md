@@ -60,7 +60,7 @@ source ~/.bash_profile
 2.  Pull the docker image
 
 ```Shell
-docker pull ghcr.io/pranavanba/recoversummarizer:main
+docker pull ghcr.io/sage-bionetworks/recoversummarizer:main
 ```
 
 3.  Run the docker container
@@ -75,7 +75,7 @@ docker run \
   -e CONCEPT_REPLACEMENTS=<named-vector-in-parentheses> \
   -e CONCEPT_FILTER_COL=<concept-map-column-name> \
   -e SYN_FOLDER_ID=<synapseID> \
-  ghcr.io/pranavanba/recoversummarizer:main
+  ghcr.io/sage-bionetworks/recoversummarizer:main
 ```
 
 For an explanation of the various environment variables required in the `docker run` command, please see [Environment Variables](#environment-variables).
