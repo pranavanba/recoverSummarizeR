@@ -1,8 +1,8 @@
 ## recoverSummarizeR
 
 [![GitHub R package version](https://img.shields.io/github/r-package/v/sage-bionetworks/recoversummarizer?label=R%20Package%20Version)](DESCRIPTION)
+[![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/sage-bionetworks/recoversummarizer/docker-build-publish.yaml?branch=main)](https://github.com/sage-bionetworks/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
 [![GitHub](https://img.shields.io/github/license/sage-bionetworks/recoversummarizer)](LICENSE.md)
-[![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/sage-bionetworks/recoversummarizer/docker-build-publish.yaml?branch=main&label=docker-build-publish&logo=github%20actions&logoColor=white)](https://github.com/sage-bionetworks/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
 
 This package provides functions to help with fetching data from Synapse, as well as processing, summarizing, formatting the data, and storing any output in Synapse. While this package is mainly intended for use in RECOVER, some functions in the package can be used outside this context and for general and other specific use cases.
 
