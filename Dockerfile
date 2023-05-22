@@ -13,9 +13,8 @@ CMD ["sh", "-c", "Rscript -e 'library(recoverSummarizeR); \
                       synapser::synLogin(); \
                       ontologyFileID <- Sys.getenv(\"ontologyFileID\"); \
                       parquetDirID <- Sys.getenv(\"PARQUET_DIR_ID\"); \
-                      name_filter <- Sys.getenv(\"DATASET_NAME_FILTER\"); \
+                      dataset_name_filter <- Sys.getenv(\"DATASET_NAME_FILTER\"); \
                       concept_replacements <- eval(parse(text=Sys.getenv(\"CONCEPT_REPLACEMENTS\"))); \
                       concept_filter_col <- Sys.getenv(\"CONCEPT_FILTER_COL\"); \
                       synFolderID <- Sys.getenv(\"SYN_FOLDER_ID\"); \
-                      recoverSummarizeR::mainflow(ontologyFileID, parquetDirID, \
-                      concept_replacements, concept_filter_col, synFolderID)'"]
+                      recoverSummarizeR::mainflow(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID)'"]
