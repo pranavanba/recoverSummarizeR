@@ -1,8 +1,8 @@
 ## recoverSummarizeR
 
-[![GitHub R package version](https://img.shields.io/github/r-package/v/pranavanba/recoversummarizer?label=R%20Package%20Version)](DESCRIPTION)
-[![GitHub](https://img.shields.io/github/license/pranavanba/recoversummarizer)](LICENSE.md)
-[![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/pranavanba/recoversummarizer/docker-build-publish.yaml?branch=main&label=docker-build-publish&logo=github%20actions&logoColor=white)](https://github.com/pranavanba/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
+[![GitHub R package version](https://img.shields.io/github/r-package/v/sage-bionetworks/recoversummarizer?label=R%20Package%20Version)](DESCRIPTION)
+[![GitHub](https://img.shields.io/github/license/sage-bionetworks/recoversummarizer)](LICENSE.md)
+[![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/sage-bionetworks/recoversummarizer/docker-build-publish.yaml?branch=main&label=docker-build-publish&logo=github%20actions&logoColor=white)](https://github.com/sage-bionetworks/recoverSummarizeR/actions/workflows/docker-build-publish.yaml)
 
 This package provides functions to help with fetching data from Synapse, as well as processing, summarizing, formatting the data, and storing any output in Synapse. While this package is mainly intended for use in RECOVER, some functions in the package can be used outside this context and for general and other specific use cases.
 
@@ -29,7 +29,7 @@ devtools::install_github("Sage-Bionetworks/recoverSummarizeR")
 
 ### Docker Container
 
-For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/users/pranavanba/packages/container/package/recoversummarizer).
+For the Docker method, there is a pre-published docker image available at [Packages](https://github.com/orgs/Sage-Bionetworks/packages/container/package/recoversummarizer).
 
 The primary purpose of using the Docker method, in the context of this package, is that the docker image published from this repo contains instructions to:
 
@@ -60,7 +60,7 @@ source ~/.bash_profile
 2.  Pull the docker image
 
 ```Shell
-docker pull ghcr.io/pranavanba/recoversummarizer:main
+docker pull ghcr.io/sage-bionetworks/recoversummarizer:main
 ```
 
 3.  Run the docker container
@@ -75,7 +75,7 @@ docker run \
   -e CONCEPT_REPLACEMENTS=<named-vector-in-parentheses> \
   -e CONCEPT_FILTER_COL=<concept-map-column-name> \
   -e SYN_FOLDER_ID=<synapseID> \
-  ghcr.io/pranavanba/recoversummarizer:main
+  ghcr.io/sage-bionetworks/recoversummarizer:main
 ```
 
 For an explanation of the various environment variables required in the `docker run` command, please see [Environment Variables](#environment-variables).
