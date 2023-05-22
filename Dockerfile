@@ -17,4 +17,4 @@ CMD ["sh", "-c", "Rscript -e 'library(recoverSummarizeR); \
                       concept_replacements <- eval(parse(text=Sys.getenv(\"CONCEPT_REPLACEMENTS\"))); \
                       concept_filter_col <- Sys.getenv(\"CONCEPT_FILTER_COL\"); \
                       synFolderID <- Sys.getenv(\"SYN_FOLDER_ID\"); \
-                      recoverSummarizeR::mainflow(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID)'"]
+                      recoverSummarizeR::summarize_pipeline(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID)'"]
