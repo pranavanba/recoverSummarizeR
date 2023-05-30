@@ -5,6 +5,7 @@ RUN apt-get update -y && \
     apt-get install -y git python3 python3-pip python3-venv curl libssl-dev libcurl4-openssl-dev
 
 CMD Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org")); \
+              require(synapser); \
               install.packages("devtools"); \
               require(devtools); \
               devtools::install_github("Sage-Bionetworks/recoverSummarizeR"); \
