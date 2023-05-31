@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.2.2
+FROM rocker/tidyverse
 
 RUN apt-get update -y && \
     apt-get upgrade -y && \
