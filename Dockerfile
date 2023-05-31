@@ -7,17 +7,12 @@ RUN apt-get update -y && \
 RUN python3 -m pip install --upgrade pip
 RUN pip install synapseclient
 
-CMD Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org")); \
-              require(synapser); \
-              install.packages("devtools"); \
-              require(devtools); \
-              devtools::install_github("Sage-Bionetworks/recoverSummarizeR"); \
-              library(recoverSummarizeR); \
-              synapser::synLogin(authToken=Sys.getenv("SYNAPSE_AUTH_TOKEN")); \
-              ontologyFileID <- Sys.getenv("ONTOLOGY_FILE_ID"); \
-              parquetDirID <- Sys.getenv("PARQUET_DIR_ID"); \
-              dataset_name_filter <- Sys.getenv("DATASET_NAME_FILTER"); \
-              concept_replacements <- eval(parse(text=Sys.getenv("CONCEPT_REPLACEMENTS"))); \
-              concept_filter_col <- Sys.getenv("CONCEPT_FILTER_COL"); \
-              synFolderID <- Sys.getenv("SYN_FOLDER_ID"); \
-              recoverSummarizeR::summarize_pipeline(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID)'
+RUN R -e 'install.packages("synapser", repos = c("http://ran.synapse.org", "http://cran.fhcrc.org"))'
+RUN R -e 'install.packages("devtools")'
+RUN R -e 'devtools::install_github("Sage-Bionetworks/recoverSummarizeR")'
+
+RUN curl -o /root/docker-run-script.R https://raw.githubusercontent.com/Sage-Bionetworks/recoverSummarizeR/main/docker-run-script.R
+
+WORKDIR /root
+
+CMD Rscript docker-run-script.R
