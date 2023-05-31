@@ -81,9 +81,9 @@ summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter
     replace(is.na(.), "<null>") %>% 
     dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
   
-  utils::write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
-  utils::write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
+  utils::write.csv(output_concepts, file = '~/output_concepts.csv', row.names = F)
+  utils::write.csv(concept_map, file = '~/concepts_map.csv', row.names = F)
   
-  store_in_syn(synFolderID, 'output_concepts.csv', used_param = ontologyFileID, executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR/tree/release")
-  store_in_syn(synFolderID, 'concepts_map.csv', used_param = ontologyFileID)
+  store_in_syn(synFolderID, '~/output_concepts.csv', used_param = ontologyFileID, executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR")
+  store_in_syn(synFolderID, '~/concepts_map.csv', used_param = ontologyFileID)
 }
