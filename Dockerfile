@@ -13,7 +13,7 @@ CMD Rscript -e 'install.packages("synapser", repos = c("http://ran.synapse.org",
               require(devtools); \
               devtools::install_github("Sage-Bionetworks/recoverSummarizeR"); \
               library(recoverSummarizeR); \
-              synapser::synLogin(); \
+              synapser::synLogin(authToken=Sys.getenv("SYNAPSE_AUTH_TOKEN")); \
               ontologyFileID <- Sys.getenv("ontologyFileID"); \
               parquetDirID <- Sys.getenv("PARQUET_DIR_ID"); \
               dataset_name_filter <- Sys.getenv("DATASET_NAME_FILTER"); \
