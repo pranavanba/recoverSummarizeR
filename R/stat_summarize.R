@@ -28,7 +28,7 @@ stat_summarize <- function(df) {
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!all(c("participantidentifier", "concept", "value") %in% colnames(df))) stop("'participantidentifier', 'concept', and 'value' columns must be present in df")
   
-  summarize_stat_date <- function(df, timescale) {
+  summarize_alltime <- function(df) {
     if ("startdate" %in% colnames(df) & "enddate" %in% colnames(df)) {
       # Do nothing
     } else if ("date" %in% colnames(df)) {
@@ -60,13 +60,12 @@ stat_summarize <- function(df) {
       tidyr::pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
                    names_to = "stat",
                    values_to = "value") %>%
-      dplyr::mutate(concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)) %>%
+      dplyr::mutate(concept = paste0("mhp:summary:alltime:", stat, ":", concept)) %>%
       dplyr::select(participantidentifier, startdate, enddate, concept, value) %>%
       dplyr::distinct()
   }
   
-  
-  summarize_weekly_date <- function(df, timescale) {
+  summarize_weekly <- function(df) {
     if ("startdate" %in% colnames(df)) {
       # Do nothing
     } else if ("date" %in% colnames(df)) {
@@ -82,34 +81,38 @@ stat_summarize <- function(df) {
     }
     
     df %>%
-      dplyr::select(participantidentifier, concept, value, startdate) %>%
-      dplyr::mutate(startdate = lubridate::as_date(startdate),
-                    year = lubridate::year(startdate),
-                    week = lubridate::week(startdate)) %>%
-      dplyr::filter(startdate >= lubridate::floor_date(min(startdate), unit = "week", week_start = 7)) %>%
-      dplyr::group_by(participantidentifier, concept, year, week) %>%
-      dplyr::reframe(`5pct` = stats::quantile(as.numeric(value), 0.05, na.rm = T),
-                `95pct` = stats::quantile(as.numeric(value), 0.95, na.rm = T),
-                mean = mean(as.numeric(value), na.rm = T),
-                median = stats::median(as.numeric(value), na.rm = T),
-                variance = stats::var(as.numeric(value), na.rm = T),
-                numrecords = dplyr::n(),
-                startdate =
-                  (lubridate::make_date(year, 1, 1) + lubridate::weeks(week-1)) %>% lubridate::floor_date(unit = "week", week_start = 7),
-                enddate =
-                  startdate + lubridate::days(6)) %>%
-      dplyr::ungroup() %>%
-      tidyr::pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords),
-                   names_to = "stat",
-                   values_to = "value") %>%
-      dplyr::mutate(concept = paste0("mhp:summary:", timescale, ":", stat, ":", concept)) %>%
+      dplyr::select(participantidentifier, 
+                    concept, 
+                    value, 
+                    startdate) %>% 
+      dplyr::mutate(startdate = lubridate::as_date(startdate)) %>% 
+      dplyr::filter(startdate >= lubridate::floor_date(min(startdate), 
+                                                       unit = "week", 
+                                                       week_start = 7)) %>% 
+      dplyr::mutate(startdate = lubridate::floor_date(startdate, unit = "week", week_start = 7), 
+                    enddate = startdate + lubridate::days(6)) %>% 
+      dplyr::group_by(participantidentifier, 
+                      concept, 
+                      startdate, 
+                      enddate) %>% 
+      dplyr::reframe(`5pct` = stats::quantile(as.numeric(value), 0.05, na.rm = T), 
+                     `95pct` = stats::quantile(as.numeric(value), 0.95, na.rm = T), 
+                     mean = mean(as.numeric(value), na.rm = T), 
+                     median = stats::median(as.numeric(value), na.rm = T), 
+                     variance = stats::var(as.numeric(value), na.rm = T), 
+                     numrecords = dplyr::n()) %>% 
+      dplyr::ungroup() %>% 
+      tidyr::pivot_longer(cols = c(mean, median, variance, `5pct`, `95pct`, numrecords), 
+                          names_to = "stat", 
+                          values_to = "value") %>% 
+      dplyr::mutate(concept = paste0("mhp:summary:weekly:", stat, ":", concept)) %>% 
       dplyr::select(participantidentifier, startdate, enddate, concept, value) %>% 
       dplyr::distinct()
   }
   
   result <- 
-    dplyr::bind_rows(summarize_stat_date(df, "alltime"), 
-              summarize_weekly_date(df, "weekly")) %>% 
+    dplyr::bind_rows(summarize_alltime(df), 
+                     summarize_weekly(df)) %>% 
     dplyr::distinct()
   
   return(result)
