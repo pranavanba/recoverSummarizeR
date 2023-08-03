@@ -68,9 +68,16 @@ summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter
   
   df_summarized <- 
     df_list_melted_filtered %>% 
-    {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
-    lapply(stat_summarize) %>% 
+    lapply(function(df) {
+      df %>%
+        dplyr::rename(startdate = dplyr::any_of(c("date", "datetime"))) %>%
+        dplyr::mutate(enddate = if (!("enddate" %in% names(.))) NA else enddate) %>% 
+        dplyr::select(-dplyr::any_of(c("modifieddate", "inserteddate"))) %>% 
+        dplyr::select(participantidentifier, startdate, enddate, concept, value)
+    }) %>% 
     dplyr::bind_rows() %>% 
+    dplyr::filter("concept" %in% colnames(.)) %>% 
+    stat_summarize() %>% 
     dplyr::distinct()
   
   output_concepts <- 
