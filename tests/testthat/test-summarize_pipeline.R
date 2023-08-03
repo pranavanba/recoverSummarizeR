@@ -24,7 +24,7 @@ test_that("function works correctly", {
   newest_concept_map_version <- synapser::synGet('syn51218416')$versionLabel
   
   pretest_output_concepts <- 
-    synapser::synGet('syn51277458', version = 29) %>% 
+    synapser::synGet('syn51277458', version = 53) %>% 
     {read.csv(.$path)} %>% 
     dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character))
   
