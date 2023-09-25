@@ -58,5 +58,5 @@ Variable | Definition | Example
 | `SYN_FOLDER_ID` | A Synapse ID for a folder entity in Synapse where you want to store a file. | syn12345678
 | `method` | Either `synapse` or `sts` to specify the method to use in getting the parquet datasets. `synapse` will get files directly from a synapse project or folder using the synapse client, while `sts` will use sts-token access to get objects from an sts-enabled storage location, such as an S3 bucket. | synapse
 | `s3bucket` | The name of the S3 bucket to access when `method=sts`. | my-bucket
-| `s3basekey` | The base key of the S3 bucket to access when `method='sts'`. | main/parquet/
+| `s3basekey` | The base key of the S3 bucket to access when `method=sts`. | main/parquet/
 | `downloadLocation` | The location to download input files to. | ./parquet
