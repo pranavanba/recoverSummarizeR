@@ -61,7 +61,7 @@ concept_filter_col <- "concept_cd"
 synFolderID <- "syn18273645"
 method <- "synapse"
 s3bucket <- "my-project-bucket"
-s3basekey <- "main/parquet"
+s3basekey <- "main/parquet/"
 downloadLocation <- "./parquet"
 
 summarize_pipeline(ontologyFileID = ontologyFileID,
