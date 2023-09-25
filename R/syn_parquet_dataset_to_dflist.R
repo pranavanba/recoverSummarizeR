@@ -1,13 +1,13 @@
-#' Recursively download Synapse files/folders
+#' Download Parquet Datasets from Synapse or an STS-Enabled Location
 #'
-#' `syn_parquet_dataset_to_dflist()` recursively downloads files from a Synapse directory and maintains the original directory
-#' structure, reads the dataset/directory files to data frames, and stores the data frames in a list.
+#' `syn_parquet_dataset_to_dflist()` downloads objects from a Synapse directory or syncs from an STS-enabled location, such as an S3 bucket, and maintains the original directory
+#' structure, reads the parquet datasets to data frames, and stores the data frames in a list.
 #'
 #' @param synDirID A Synapse ID for a folder entity in Synapse.
 #' @param method Either 'synapse' or 'sts' to specify the method to use in getting the parquet datasets. 'synapse' will get files directly from a synapse project or folder using the synapse client, while 'sts' will use sts-token access to get objects from an sts-enabled storage location, such as an S3 bucket.
 #' @param s3bucket The name of the S3 bucket to access when `method='sts'`.
 #' @param s3basekey The base key of the S3 bucket to access when `method='sts'`.
-#' @param downloadLocation The location to download files to when `method='sts'`.
+#' @param downloadLocation The location to download files to.
 #' @param dataset_name_filter A string used to filter the list of data frames by including only the data frames whose
 #'   names contain the specified string.
 #'
@@ -16,10 +16,17 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' df_list <- syn_parquet_dataset_to_dflist("syn12345678", "sts", "s3://my-bucket/", "main/folder/", "./parquet", "fitbit")
-#' # df_list will use the `sts` method to get parquet datasets in synapse at the parquetDirectoryID and the output will contain only data frames for parquet datasets whoes names contain the string "fitbit"
+#' df_list <- syn_parquet_dataset_to_dflist("syn12345678", 
+#'                                          "sts", 
+#'                                          "s3://my-bucket/", 
+#'                                          "main/folder", 
+#'                                          "./parquet", 
+#'                                          "fitbit")
+#' # df_list will use the `sts` method to get objects in synapse at 
+#'   the synDirID and the output will contain only data frames for 
+#'   parquet datasets whose names contain the string "fitbit"
 #' }
-syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation=NULL, dataset_name_filter=NULL) {
+syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation, dataset_name_filter=NULL) {
   if (method=="synapse") {
     unlink(downloadLocation, recursive = T, force = T)
     system(glue::glue("synapse get -r {synDirID} --manifest suppress --downloadLocation {downloadLocation}"))
