@@ -21,22 +21,28 @@
 #' }
 syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation=NULL, dataset_name_filter=NULL) {
   if (method=="synapse") {
-    system(paste("synapse get -r", synDirID))
+    unlink(downloadLocation, recursive = T, force = T)
+    system(glue::glue("synapse get -r {synDirID} --manifest suppress --downloadLocation {downloadLocation}"))
     
-    file_paths <- list.files(recursive = T, full.names = T)
+    file_paths <- list.files(downloadLocation, recursive = T, full.names = T)
     file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
     
     df_list <- lapply(file_paths, function(file_path) {
-      if (grepl(".parquet$", file_path)) {
-        arrow::read_parquet(file_path)
-      } else if (grepl(".tsv$", file_path)) {
-        readr::read_tsv(file_path, show_col_types = F)
-      } else if (grepl(".ndjson$", file_path)) {
-        ndjson::stream_in(file_path, cls = "tbl")
-      } else if (grepl(".csv$", file_path)) {
-        utils::read.csv(file_path)
+      if (grepl("dataset_.*", file_path)) {
+        if (grepl(".*fitbit.*intraday.*", file_path)) {
+          arrow::open_dataset(file_path) %>% 
+            dplyr::select(dplyr::all_of(c("ParticipantIdentifier", 
+                                          "DateTime", 
+                                          "DeepSleepSummaryBreathRate", 
+                                          "RemSleepSummaryBreathRate", 
+                                          "FullSleepSummaryBreathRate", 
+                                          "LightSleepSummaryBreathRate"))) %>% 
+            dplyr::collect()
+        } else {
+          arrow::open_dataset(file_path) %>% dplyr::collect()
+        }
       } else {
-        stop(paste("Unsupported file format for", file_path))
+        stop(paste("Unsupported file format for files in dataset:", file_path))
       }
     })
     
@@ -68,15 +74,15 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
                'AWS_SECRET_ACCESS_KEY'=token$secretAccessKey,
                'AWS_SESSION_TOKEN'=token$sessionToken)
     
-    unlink(AWS_PARQUET_DOWNLOAD_LOCATION, recursive = T, force = T)
+    unlink(downloadLocation, recursive = T, force = T)
     sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*owner.txt*" --exclude "*archive*"')
     system(sync_cmd)
     
-    file_paths <- list.files(recursive = F, full.names = T)
+    file_paths <- list.files(downloadLocation, recursive = F, full.names = T)
     file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
     
     df_list <- lapply(file_paths, function(file_path) {
-      if (grepl("^dataset_.*", file_path)) {
+      if (grepl("dataset_.*", file_path)) {
         if (grepl(".*fitbit.*intraday.*", file_path)) {
           arrow::open_dataset(file_path) %>% 
             dplyr::select(dplyr::all_of(c("ParticipantIdentifier", 
@@ -96,7 +102,7 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
     
     names(df_list) <- 
       file_paths %>% 
-      {paste(basename(dirname(.)), "-", basename(.))} %>% 
+      {paste(basename(.))} %>%
       {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
     
     if (!is.null(dataset_name_filter)) {
