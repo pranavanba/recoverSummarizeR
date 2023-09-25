@@ -19,7 +19,7 @@
 #' df_list <- syn_parquet_dataset_to_dflist("syn12345678", 
 #'                                          "sts", 
 #'                                          "s3://my-bucket/", 
-#'                                          "main/folder", 
+#'                                          "main/folder/", 
 #'                                          "./parquet", 
 #'                                          "fitbit")
 #' # df_list will use the `sts` method to get objects in synapse at 
