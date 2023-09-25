@@ -7,6 +7,7 @@
 #' @inheritParams syn_dir_to_dflist
 #' @inheritParams diff_concepts
 #' @inheritParams store_in_syn
+#' @inheritParams syn_parquet_dataset_to_dflist
 #' @export
 #' @examples
 #' \dontrun{
@@ -22,18 +23,41 @@
 #'                           "sleepbrth" = "sleepsummarybreath")
 #' concept_filter_col <- "concept_cd"
 #' synFolderID <- "syn18273645"
+#' method <- "synapse"
+#' s3bucket <- "my-project-bucket"
+#' s3basekey <- "main/parquet"
+#' downloadLocation <- "./parquet"
 #' 
 #' summarize_pipeline(ontologyFileID = ontologyFileID,
 #'                    parquetDirID = parquetDirID,
 #'                    dataset_name_filter = dataset_name_filter,
 #'                    concept_replacements = concept_replacements,
 #'                    concept_filter_col = concept_filter_col,
-#'                    synFolderID = synFolderID)
+#'                    synFolderID = synFolderID,
+#'                    method = method,
+#'                    s3bucket = s3bucket,
+#'                    s3basekey = s3basekey,
+#'                    downloadLocation = downloadLocation)
 #' }
-summarize_pipeline <- function(ontologyFileID, parquetDirID, dataset_name_filter, concept_replacements, concept_filter_col, synFolderID) {
+summarize_pipeline <- function(ontologyFileID, 
+                               parquetDirID, 
+                               dataset_name_filter, 
+                               concept_replacements, 
+                               concept_filter_col, 
+                               synFolderID, 
+                               method="synapse", 
+                               s3bucket=NULL, 
+                               s3basekey=NULL, 
+                               downloadLocation) {
+  
   concept_map <- syn_file_to_df(ontologyFileID, "concept_cd")
   
-  df_list_original <- syn_dir_to_dflist(parquetDirID, dataset_name_filter)
+  df_list_original <- syn_parquet_dataset_to_dflist(parquetDirID, 
+                                                    method, 
+                                                    s3bucket, 
+                                                    s3basekey, 
+                                                    downloadLocation, 
+                                                    dataset_name_filter)
   
   df_list_unified_tmp <- 
     unify_dfs(df_list_original) %>% 
