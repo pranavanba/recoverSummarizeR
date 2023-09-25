@@ -10,7 +10,11 @@ summarize_pipeline(
   dataset_name_filter,
   concept_replacements,
   concept_filter_col,
-  synFolderID
+  synFolderID,
+  method = "synapse",
+  s3bucket = NULL,
+  s3basekey = NULL,
+  downloadLocation
 )
 }
 \arguments{
@@ -29,6 +33,14 @@ names contain the specified string.}
 in \code{df_list} that are not to be excluded).}
 
 \item{synFolderID}{A Synapse ID for a folder entity in Synapse.}
+
+\item{method}{Either 'synapse' or 'sts' to specify the method to use in getting the parquet datasets. 'synapse' will get files directly from a synapse project or folder using the synapse client, while 'sts' will use sts-token access to get objects from an sts-enabled storage location, such as an S3 bucket.}
+
+\item{s3bucket}{The name of the S3 bucket to access when \code{method='sts'}.}
+
+\item{s3basekey}{The base key of the S3 bucket to access when \code{method='sts'}.}
+
+\item{downloadLocation}{The location to download files to.}
 }
 \description{
 Execute recoverSummarizeR main pipeline
@@ -47,12 +59,20 @@ concept_replacements <- c("mins" = "minutes",
                           "sleepbrth" = "sleepsummarybreath")
 concept_filter_col <- "concept_cd"
 synFolderID <- "syn18273645"
+method <- "synapse"
+s3bucket <- "my-project-bucket"
+s3basekey <- "main/parquet"
+downloadLocation <- "./parquet"
 
 summarize_pipeline(ontologyFileID = ontologyFileID,
                    parquetDirID = parquetDirID,
                    dataset_name_filter = dataset_name_filter,
                    concept_replacements = concept_replacements,
                    concept_filter_col = concept_filter_col,
-                   synFolderID = synFolderID)
+                   synFolderID = synFolderID,
+                   method = method,
+                   s3bucket = s3bucket,
+                   s3basekey = s3basekey,
+                   downloadLocation = downloadLocation)
 }
 }

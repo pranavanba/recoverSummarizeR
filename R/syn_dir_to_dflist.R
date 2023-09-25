@@ -4,6 +4,7 @@
 #' structure, reads the dataset/directory files to data frames, and stores the data frames in a list.
 #'
 #' @param synDirID A Synapse ID for a folder entity in Synapse.
+#' @param downloadLocation The location to download files to.
 #' @param dataset_name_filter A string used to filter the list of data frames by including only the data frames whose
 #'   names contain the specified string.
 #'
@@ -16,10 +17,11 @@
 #' df_list <- syn_dir_to_dflist(parquetDirectoryID, "fitbit")
 #' # df_list will contain only data frames with names containing the string "fitbit"
 #' }
-syn_dir_to_dflist <- function(synDirID, dataset_name_filter=NULL) {
-  system(paste("synapse get -r", synDirID))
+syn_dir_to_dflist <- function(synDirID, downloadLocation, dataset_name_filter=NULL) {
+  unlink(downloadLocation, recursive = T, force = T)
+  system(glue::glue("synapse get -r {synDirID} --manifest suppress --downloadLocation {downloadLocation}"))
   
-  file_paths <- list.files(recursive = T, full.names = T)
+  file_paths <- list.files(downloadLocation, recursive = T, full.names = T)
   file_paths <- file_paths[grepl("dataset_", (file_paths), ignore.case = T)]
   
   df_list <- lapply(file_paths, function(file_path) {
