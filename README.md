@@ -30,46 +30,19 @@ Please refer to [summarize_pipeline() Parameters](#summarize_pipeline-parameters
 
 Using `summarize_pipeline()` allows you to use the built-in pipeline with pre-determined logic, formatting, and output specifications. Use `summarize_pipeline()` with caution, as `summarize_pipeline()` is a purpose-built function based on a pipeline tailored to a specific use case in RECOVER and is not intended for general use.
 
-The flow of the pipeline that `summarize_pipeline()` is built on is as follows:
+The flow of the pipeline that `summarize_pipeline()` is based on is as follows:
 
-### summarize_pipeline()
-
-```R
-# Get ontology file (i2b2 concepts map)
-get_concept_map(synID)
-
-# Read data files to data frames
-
-# Get post-ETL data files
-synget_parquet_to_df(synDirID, dataset_name_filter)
-
-# Combine partitioned (multi-part) datasets
-combine_duplicate_dfs(df_list)
-
-# Process and transform the data
-
-# Get the excluded (non-approved) i2b2 summary concepts
-diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
-
-# Reshape the data frames that have the relevant data
-melt_df(df, excluded_concepts)
-
-# Convert the `value` column of relevant data frames to `numeric` type
-convert_col_to_numeric(df_list, df_to_avoid, col_to_convert)
-
-# Summarize the relevant data
-stat_summarize(df)
-
-# Process and transform the output into the desired format for i2b2
-process_df(df, concept_map, concept_replacements_reversed, concept_map_concepts, concept_map_units)
-
-# Write the output data frames to CSV files
-write.csv(output_concepts, file = 'output_concepts.csv', row.names = F)
-write.csv(concept_map, file = 'concepts_map.csv', row.names = F)
-
-# Store the output in Synapse
-store_in_syn(synFolderID, filepath, used_param, executed_param)
-```
+1. Get ontology file (i2b2 concepts map)
+2. Read data files to data frames
+3. Combine partitioned (multi-part) datasets
+4. Process and transform the data
+5. Get the excluded (non-approved) i2b2 summary concepts
+6. Reshape the data frames that have the relevant data
+7. Convert the `value` column of relevant data frames to `numeric` type
+8. Summarize the relevant data
+9. Process and transform the output into the desired format for i2b2
+10. Write the output data frames to CSV files
+11. Store the output in Synapse
 
 #### `summarize_pipeline()` Parameters
 
@@ -83,3 +56,7 @@ Variable | Definition | Example
 | `CONCEPT_REPLACEMENTS` | A named vector of strings and their replacements. The names must be valid values of the `concept_filter_col` column of the `concept_map` data frame. For RECOVER, `concept_map` is the ontology file data frame. | "c('mins' = 'minutes', 'avghr' = 'averageheartrate', 'spo2' = 'spo2\_', 'hrv' = 'hrv_dailyrmssd', 'restinghr' = 'restingheartrate', 'sleepbrth' = 'sleepsummarybreath')" <br><br> *Must surround `c(…)` in parentheses (as indicated above) in `docker run …`*
 | `CONCEPT_FILTER_COL` | The column of the `concept_map` data frame that contains "approved concepts" (column names of dataset data frames that are not to be excluded). For RECOVER, `concept_map` is the ontology file data frame. | concept_cd
 | `SYN_FOLDER_ID` | A Synapse ID for a folder entity in Synapse where you want to store a file. | syn12345678
+| `method` | Either 'synapse' or 'sts' to specify the method to use in getting the parquet datasets. `synapse` will get files directly from a synapse project or folder using the synapse client, while `sts` will use sts-token access to get objects from an sts-enabled storage location, such as an S3 bucket. | synapse
+| `s3bucket` | The name of the S3 bucket to access when `method=sts`. | my-bucket
+| `s3basekey` | The base key of the S3 bucket to access when `method='sts'`. | main/parquet/
+| `downloadLocation` | The location to download input files to. | ./parquet
