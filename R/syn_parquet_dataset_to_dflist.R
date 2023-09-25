@@ -63,6 +63,17 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
                                         "RemSleepSummaryBreathRate", 
                                         "FullSleepSummaryBreathRate", 
                                         "LightSleepSummaryBreathRate"))) %>% 
+          dplyr::mutate(
+            drop_row = ifelse(
+              test = 
+                is.na(DeepSleepSummaryBreathRate) & 
+                is.na(RemSleepSummaryBreathRate) & 
+                is.na(FullSleepSummaryBreathRate) & 
+                is.na(LightSleepSummaryBreathRate),
+              yes = "drop", 
+              no = "keep")) %>% 
+          dplyr::filter(drop_row=="keep") %>% 
+          dplyr::select(-(dplyr::any_of(c("drop_row")))) %>% 
           dplyr::collect()
       } else {
         arrow::open_dataset(file_path) %>% dplyr::collect()
