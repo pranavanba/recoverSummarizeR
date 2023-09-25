@@ -4,10 +4,12 @@
 \alias{syn_dir_to_dflist}
 \title{Recursively download Synapse files/folders}
 \usage{
-syn_dir_to_dflist(synDirID, dataset_name_filter = NULL)
+syn_dir_to_dflist(synDirID, downloadLocation, dataset_name_filter = NULL)
 }
 \arguments{
 \item{synDirID}{A Synapse ID for a folder entity in Synapse.}
+
+\item{downloadLocation}{The location to download files to.}
 
 \item{dataset_name_filter}{A string used to filter the list of data frames by including only the data frames whose
 names contain the specified string.}
