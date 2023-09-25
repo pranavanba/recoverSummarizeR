@@ -17,6 +17,7 @@ RoxygenNote: 7.2.3
 Imports:
     arrow (>= 11.0.0.3),
     dplyr (>= 1.1.2),
+    glue (>= 1.6.2),
     lubridate (>= 1.9.2),
     magrittr (>= 2.0.3),
     ndjson (>= 0.9.0),
