@@ -28,6 +28,8 @@
 #' melted_df <- melt_df(mtcars)
 #' head(melted_df)
 melt_df <- function(df, excluded_concepts = "") {
+  cat("Running melt_df()...\n")
+  
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!is.vector(excluded_concepts)) stop("excluded_concepts must be a vector")
   if (!is.character(excluded_concepts)) stop("excluded_concepts needs to be of type 'character'")

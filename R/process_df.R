@@ -51,6 +51,8 @@
 #' df_processed <- process_df(df, concept_map, concept_replacements_reversed, "concept_cd", "UNITS_CD")
 #' head(df_processed)
 process_df <- function(df, concept_map, concept_replacements_reversed = NULL, concept_map_concepts = "concept_cd", concept_map_units = "UNITS_CD") {
+  cat("Running process_df()...\n")
+  
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!is.data.frame(concept_map)) stop("concept_map must be a data frame")
   if (!is.null(concept_replacements_reversed)) {

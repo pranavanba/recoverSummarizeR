@@ -40,6 +40,8 @@
 #'               concept_map = concept_map,
 #'               concept_filter_col = "concept")
 diff_concepts <- function(df_list, concept_replacements = NULL, concept_map, concept_filter_col) {
+  cat("Running diff_concepts()...\n")
+  
   if (is.data.frame(df_list)) stop("df_list must be a list of data frames, not a single data frame")
   if (is.character(df_list)) stop("df_list must be a list of data frames, not a character")
   if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")
