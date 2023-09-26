@@ -16,15 +16,13 @@ test_that("function works correctly for synapse method", {
   downloadLocation <- "./parquet"
 
   summarize_pipeline(ontologyFileID = ontologyFileID,
-           parquetDirID = parquetDirID,
-           dataset_name_filter = dataset_name_filter,
-           concept_replacements = concept_replacements,
-           concept_filter_col = concept_filter_col,
-           synFolderID = synFolderID,
-           method = method,
-           s3bucket = s3bucket,
-           s3basekey = s3basekey,
-           downloadLocation = downloadLocation)
+                     parquetDirID = parquetDirID,
+                     dataset_name_filter = dataset_name_filter,
+                     concept_replacements = concept_replacements,
+                     concept_filter_col = concept_filter_col,
+                     synFolderID = synFolderID,
+                     method = method,
+                     downloadLocation = downloadLocation)
   
   newest_output_concepts_version <- synapser::synGet('syn51277458')$versionLabel
   newest_concept_map_version <- synapser::synGet('syn51218416')$versionLabel
