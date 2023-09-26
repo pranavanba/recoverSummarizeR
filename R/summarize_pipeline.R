@@ -50,7 +50,10 @@ summarize_pipeline <- function(ontologyFileID,
                                s3basekey=NULL, 
                                downloadLocation) {
   
+  cat("Running summarize_pipeline()...\n")
+  
   concept_map <- syn_file_to_df(ontologyFileID, "concept_cd")
+  cat("syn_file_to_df() completed.\n")
   
   df_list_original <- syn_parquet_dataset_to_dflist(parquetDirID, 
                                                     method, 
@@ -58,13 +61,15 @@ summarize_pipeline <- function(ontologyFileID,
                                                     s3basekey, 
                                                     downloadLocation, 
                                                     dataset_name_filter)
+  cat("syn_parquet_dataset_to_dflist() completed.\n")
   
   df_list_unified_tmp <- 
     unify_dfs(df_list_original) %>% 
     lapply(function(x) {
       names(x) <- tolower(names(x))
       return(x)})
-  
+  cat("unify_dfs() completed.\n")
+
   df_list <- 
     df_list_unified_tmp %>% 
     lapply(function(df) {
@@ -73,8 +78,10 @@ summarize_pipeline <- function(ontologyFileID,
     })
   
   concept_replacements_reversed <- vec_reverse(concept_replacements)
+  cat("vec_reverse() completed.\n")
   
   excluded_concepts <- diff_concepts(df_list, concept_replacements, concept_map, concept_filter_col)
+  cat("diff_concepts() completed.\n")
   
   df_list_melted_filtered <- 
     df_list %>% 
@@ -87,8 +94,10 @@ summarize_pipeline <- function(ontologyFileID,
                       if("value" %in% colnames(x)) "value")}) %>% 
     {Filter(function(df) "concept" %in% colnames(df), .)} %>% 
     lapply(tidyr::drop_na, "value")
+  cat("melt_df() completed.\n")
   
   df_list_melted_filtered <- df_list_melted_filtered %>% convert_col_to_numeric()
+  cat("convert_col_to_numeric() completed.\n")
   
   df_summarized <- 
     df_list_melted_filtered %>% 
@@ -103,6 +112,7 @@ summarize_pipeline <- function(ontologyFileID,
     dplyr::filter("concept" %in% colnames(.)) %>% 
     stat_summarize() %>% 
     dplyr::distinct()
+  cat("stat_summarize() completed.\n")
   
   output_concepts <- 
     process_df(df_summarized, concept_map, concept_replacements_reversed) %>% 
@@ -111,10 +121,19 @@ summarize_pipeline <- function(ontologyFileID,
     dplyr::mutate(dplyr::across(.cols = dplyr::everything(), .fns = as.character)) %>% 
     replace(is.na(.), "<null>") %>% 
     dplyr::filter(nval_num != "<null>" | tval_char != "<null>")
+  cat("process_df() completed.\n")
   
+  cat("Writing output_concepts to csv file...\n")
   utils::write.csv(output_concepts, file = '~/output_concepts.csv', row.names = F)
+  cat("write.csv() completed.\n")
+  cat("Writing concept_map to csv file...\n")
   utils::write.csv(concept_map, file = '~/concepts_map.csv', row.names = F)
+  cat("write.csv() completed.\n")
   
   store_in_syn(synFolderID, '~/output_concepts.csv', used_param = c(ontologyFileID, parquetDirID), executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR")
+  cat("store_in_syn() completed.\n")
   store_in_syn(synFolderID, '~/concepts_map.csv', used_param = ontologyFileID)
+  cat("store_in_syn() completed.\n")
+  
+  cat("summarize_pipeline() completed.\n")
 }

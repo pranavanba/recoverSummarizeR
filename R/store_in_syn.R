@@ -27,6 +27,8 @@
 #'              used_param = ontologyFileID)
 #' }
 store_in_syn <- function(synFolderID, filepath, used_param = NULL, executed_param = NULL) {
+  cat("Running store_in_syn()...\n")
+  
   fileObj <- synapser::File(path = filepath, parent = synFolderID, name = basename(filepath))
   if (!is.null(used_param) && !is.null(executed_param)) {
     fileObj <- synapser::synStore(fileObj, used = used_param, executed = executed_param)

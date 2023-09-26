@@ -28,6 +28,8 @@
 #'
 #' my_list <- convert_col_to_numeric(my_list, "exclude", "my_col")
 convert_col_to_numeric <- function(df_list, df_to_avoid = "device", col_to_convert = "value") {
+  cat("Running convert_col_to_numeric()...\n")
+  
   if (is.data.frame(df_list))stop("df_list must be a list of data frames, not a single data frame")
   if (is.character(df_list)) stop("df_list must be a list of data frames, not a character")
   if (is.numeric(df_list)) stop("df_list must be a list of data frames, not numeric")
