@@ -18,6 +18,8 @@
 #' print(fruit_colors)
 #' print(reversed_fruit_colors)
 vec_reverse <- function(str_pairs) {
+  cat("Running vec_reverse()...\n")
+  
   if (!is.vector(str_pairs)) stop("str_pairs must be a vector")
   if (is.numeric(str_pairs)) stop("str_pairs is numeric and must be of type 'character'")
   

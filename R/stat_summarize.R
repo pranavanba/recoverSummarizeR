@@ -25,6 +25,8 @@
 #' # Summarize the data
 #' stat_summarize(df)
 stat_summarize <- function(df) {
+  cat("Running stat_summarize()...\n")
+  
   if (!is.data.frame(df)) stop("df must be a data frame")
   if (!all(c("participantidentifier", "concept", "value") %in% colnames(df))) stop("'participantidentifier', 'concept', and 'value' columns must be present in df")
   

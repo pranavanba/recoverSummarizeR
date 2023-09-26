@@ -27,6 +27,8 @@
 #'   parquet datasets whose names contain the string "fitbit"
 #' }
 syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation, dataset_name_filter=NULL) {
+  cat("Running syn_parquet_dataset_to_df_list()...\n")
+  
   if (method=="synapse") {
     unlink(downloadLocation, recursive = T, force = T)
     system(glue::glue("synapse get -r {synDirID} --manifest suppress --downloadLocation {downloadLocation}"))
