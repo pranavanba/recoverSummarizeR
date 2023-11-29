@@ -99,6 +99,10 @@ summarize_pipeline <- function(ontologyFileID,
   df_list_melted_filtered <- df_list_melted_filtered %>% convert_col_to_numeric()
   cat("convert_col_to_numeric() completed.\n")
   
+  df_list_melted_filtered$fitbitintradaycombined <- 
+    df_list_melted_filtered$fitbitintradaycombined %>% 
+    dplyr::mutate(value = ifelse(value>=0, value, NA))
+  
   df_summarized <- 
     df_list_melted_filtered %>% 
     lapply(function(df) {
@@ -130,7 +134,9 @@ summarize_pipeline <- function(ontologyFileID,
   utils::write.csv(concept_map, file = '~/concepts_map.csv', row.names = F)
   cat("write.csv() completed.\n")
   
-  store_in_syn(synFolderID, '~/output_concepts.csv', used_param = c(ontologyFileID, parquetDirID), executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR")
+  store_in_syn(synFolderID, '~/output_concepts.csv', 
+               used_param = c(ontologyFileID, parquetDirID), 
+               executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR")
   cat("store_in_syn() completed.\n")
   store_in_syn(synFolderID, '~/concepts_map.csv', used_param = ontologyFileID)
   cat("store_in_syn() completed.\n")
