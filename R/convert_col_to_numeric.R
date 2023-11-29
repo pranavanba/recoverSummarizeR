@@ -39,7 +39,7 @@ convert_col_to_numeric <- function(df_list, df_to_avoid = "device", col_to_conve
   
   for (i in seq_along(df_list)) {
     if (!grepl(df_to_avoid, names(df_list)[i])) {
-      if (col_to_convert %in% names(df_list[[1]])) {
+      if (col_to_convert %in% names(df_list[[i]])) {
         df_list[[i]][[col_to_convert]] <- sapply(df_list[[i]][[col_to_convert]], as.numeric)
       }
     }
