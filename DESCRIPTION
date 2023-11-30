@@ -1,6 +1,6 @@
 Package: recoverSummarizeR
 Title: Functions for handling and summarizing data primarily for RECOVER
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(
     person("Pranav", "Anbarasu", , "pranavanba@gmail.com", role = c("aut", "cre")),
     person("Sage Bionetworks", role = "cph")
