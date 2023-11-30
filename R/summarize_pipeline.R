@@ -134,9 +134,14 @@ summarize_pipeline <- function(ontologyFileID,
   utils::write.csv(concept_map, file = '~/concepts_map.csv', row.names = F)
   cat("write.csv() completed.\n")
   
-  store_in_syn(synFolderID, '~/output_concepts.csv', 
+  store_in_syn(synFolderID, 
+               '~/output_concepts.csv', 
                used_param = c(ontologyFileID, parquetDirID), 
-               executed_param = "https://github.com/Sage-Bionetworks/recoverSummarizeR")
+               executed_param = as.character(
+                                             paste("https://github.com/Sage-Bionetworks/recoverSummarizeR/releases/tag/", 
+                                                   as.character(packageVersion("recoverSummarizeR")), 
+                                                   sep = ""))
+                                            )
   cat("store_in_syn() completed.\n")
   store_in_syn(synFolderID, '~/concepts_map.csv', used_param = ontologyFileID)
   cat("store_in_syn() completed.\n")
