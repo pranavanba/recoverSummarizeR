@@ -82,6 +82,10 @@ summarize_pipeline <- function(ontologyFileID,
     dplyr::rename(activitylogs_steps = steps,
                   activitylogs_calories = calories)
   
+  df_list$fitbitrestingheartrates <- 
+    df_list$fitbitrestingheartrates %>% 
+    dplyr::rename(restingheartrates_restingheartrate = restingheartrate)
+  
   concept_replacements_reversed <- vec_reverse(concept_replacements)
   cat("vec_reverse() completed.\n")
   
