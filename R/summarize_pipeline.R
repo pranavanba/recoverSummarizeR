@@ -110,7 +110,7 @@ summarize_pipeline <- function(ontologyFileID,
   
   df_list_melted_filtered$fitbitintradaycombined <- 
     df_list_melted_filtered$fitbitintradaycombined %>% 
-    dplyr::mutate(value = ifelse(value>=0, value, NA))
+    dplyr::filter(value>=0)
   
   df_summarized <- 
     df_list_melted_filtered %>% 
