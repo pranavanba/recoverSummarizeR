@@ -10,6 +10,7 @@
 #' @param downloadLocation The location to download files to.
 #' @param dataset_name_filter A string used to filter the list of data frames by including only the data frames whose
 #'   names contain the specified string.
+#' @param deleteExistingDir Logical indicating if existing `downloadLocation` should be deleted before syncing from S3 bucket.
 #'
 #' @return A list of data frames. The list is filtered to include only the data frames whose names contain the string
 #'   specified by `dataset_name_filter`.
@@ -26,7 +27,7 @@
 #'   the synDirID and the output will contain only data frames for 
 #'   parquet datasets whose names contain the string "fitbit"
 #' }
-syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation, dataset_name_filter=NULL) {
+syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=NULL, s3basekey=NULL, downloadLocation, dataset_name_filter=NULL, deleteExistingDir=FALSE) {
   cat("Running syn_parquet_dataset_to_df_list()...\n")
   
   if (method=="synapse") {
@@ -51,7 +52,10 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
                'AWS_SECRET_ACCESS_KEY'=token$secretAccessKey,
                'AWS_SESSION_TOKEN'=token$sessionToken)
     
-    unlink(downloadLocation, recursive = T, force = T)
+    if (deleteExistingDir==TRUE) {
+      unlink(downloadLocation, recursive = T, force = T)
+    }
+    
     inclusions <- paste0("--include \"*",dataset_name_filter,"*\"", collapse = " ")
     sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*" {inclusions}')
     system(sync_cmd)
