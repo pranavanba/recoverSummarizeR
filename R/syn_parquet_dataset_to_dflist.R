@@ -52,7 +52,8 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
                'AWS_SESSION_TOKEN'=token$sessionToken)
     
     unlink(downloadLocation, recursive = T, force = T)
-    sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*owner.txt*" --exclude "*archive*"')
+    inclusions <- paste0("--include \"*",dataset_name_filter,"*\"", collapse = " ")
+    sync_cmd <- glue::glue('aws s3 sync {base_s3_uri} {downloadLocation} --exclude "*" {inclusions}')
     system(sync_cmd)
     
   } else {
@@ -96,11 +97,6 @@ syn_parquet_dataset_to_dflist <- function(synDirID, method="synapse", s3bucket=N
     file_paths %>% 
     {paste(basename(.))} %>%
     {gsub("\\.(parquet|tsv|ndjson)$|(dataset_|-.*\\.snappy| )", "", .)}
-  
-  if (!is.null(dataset_name_filter)) {
-    pattern <- paste(dataset_name_filter, collapse="|")
-    df_list <- df_list[grepl(tolower(pattern), tolower(names(df_list))) & !grepl("manifest", tolower(names(df_list)))]
-  }
   
   return(df_list)
 }
