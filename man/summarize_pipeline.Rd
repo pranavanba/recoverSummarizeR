@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarize_pipeline.R
 \name{summarize_pipeline}
 \alias{summarize_pipeline}
-\title{Execute recoverSummarizeR main pipeline}
+\title{Execute recoverutils main pipeline}
 \usage{
 summarize_pipeline(
   ontologyFileID,
@@ -43,7 +43,7 @@ in \code{df_list} that are not to be excluded).}
 \item{downloadLocation}{The location to download files to.}
 }
 \description{
-Execute recoverSummarizeR main pipeline
+Execute recoverutils main pipeline
 }
 \examples{
 \dontrun{

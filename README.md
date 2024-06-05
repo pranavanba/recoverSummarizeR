@@ -1,7 +1,7 @@
-## recoverSummarizeR
+## recoverutils
 
-[![GitHub R package version](https://img.shields.io/github/r-package/v/sage-bionetworks/recoversummarizer?label=R%20Package%20Version)](DESCRIPTION)
-[![GitHub](https://img.shields.io/github/license/sage-bionetworks/recoversummarizer)](LICENSE.md)
+[![GitHub R package version](https://img.shields.io/github/r-package/v/sage-bionetworks/recoverutils?label=R%20Package%20Version)](DESCRIPTION)
+[![GitHub](https://img.shields.io/github/license/sage-bionetworks/recoverutils)](LICENSE.md)
 
 This package provides functions to help with fetching data from Synapse, as well as processing, summarizing, formatting the data, and storing any output in Synapse. While this package is mainly intended for use in RECOVER, some functions in the package can be used outside this context and for general and other specific use cases.
 
@@ -15,11 +15,11 @@ A Synapse authentication token is required for use of the Synapse APIs (e.g. the
 
 ## Installation
 
-Currently, `recoverSummarizeR` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
+Currently, `recoverutils` is not available via CRAN, so it must be installed from GitHub using the `devtools` package.
 
 ```R
 install.packages("devtools")
-devtools::install_github("Sage-Bionetworks/recoverSummarizeR")
+devtools::install_github("Sage-Bionetworks/recoverutils")
 ```
 
 ## Quick Start

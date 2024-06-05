@@ -10,7 +10,8 @@ syn_parquet_dataset_to_dflist(
   s3bucket = NULL,
   s3basekey = NULL,
   downloadLocation,
-  dataset_name_filter = NULL
+  dataset_name_filter = NULL,
+  deleteExistingDir = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ syn_parquet_dataset_to_dflist(
 
 \item{dataset_name_filter}{A string used to filter the list of data frames by including only the data frames whose
 names contain the specified string.}
+
+\item{deleteExistingDir}{Logical indicating if existing \code{downloadLocation} should be deleted before syncing from S3 bucket.}
 }
 \value{
 A list of data frames. The list is filtered to include only the data frames whose names contain the string

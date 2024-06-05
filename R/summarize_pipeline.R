@@ -1,4 +1,4 @@
-#' Execute recoverSummarizeR main pipeline
+#' Execute recoverutils main pipeline
 #'
 #' @param ontologyFileID A Synapse ID for a CSV file stored in Synapse. For RECOVER, this file is the i2b2 concepts map.
 #' @param parquetDirID A Synapse ID for a folder entity in Synapse where the data is stored. For RECOVER, this would be
@@ -147,8 +147,8 @@ summarize_pipeline <- function(ontologyFileID,
                '~/output_concepts.csv', 
                used_param = c(ontologyFileID, parquetDirID), 
                executed_param = as.character(
-                                             paste("https://github.com/Sage-Bionetworks/recoverSummarizeR/releases/tag/", 
-                                                   as.character(packageVersion("recoverSummarizeR")), 
+                                             paste("https://github.com/Sage-Bionetworks/recoverutils/releases/tag/", 
+                                                   as.character(packageVersion("recoverutils")), 
                                                    sep = ""))
                                             )
   cat("store_in_syn() completed.\n")
